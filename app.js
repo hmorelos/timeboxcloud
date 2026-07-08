@@ -131,9 +131,15 @@ function switchView(v){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.view === v));
 
   const fab = document.getElementById('fabAdd');
-  if(v==='pool'){ fab.style.display='block'; fab.onclick = ()=>openTaskModal(); }
-  else if(v==='rutina'){ fab.style.display='block'; fab.onclick = ()=>openRoutineModal(); }
-  else { fab.style.display='none'; }
+  if(v==='pool'){
+    fab.style.display='flex'; fab.classList.remove('fab-text'); fab.textContent='+';
+    fab.onclick = ()=>openTaskModal();
+  } else if(v==='rutina'){
+    fab.style.display='flex'; fab.classList.add('fab-text'); fab.textContent='+ Cita';
+    fab.onclick = ()=>openCitaModal();
+  } else {
+    fab.style.display='none';
+  }
 
   const titles = {hoy:'Plan', pool:'Pool de tareas', rutina:'Agenda', objetivos:'Objetivos', historial:'Historial', config:'Configuración'};
   document.getElementById('headerTitle').textContent = titles[v];
@@ -1188,6 +1194,7 @@ window.addEventListener('load', ()=>{
   chequearCambioDeDia();
   cargarConfigUI();
   limpiarAlertasViejas();
+  document.getElementById('fabAdd').style.display = 'none'; // Plan no usa fab
   renderAll();
   actualizarNotifStatus();
 

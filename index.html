@@ -113,10 +113,12 @@
   }
   .modal h2{font-size:15px; margin:0 0 12px;}
   .fab{
-    position:fixed; bottom:78px; right:18px; width:52px; height:52px; border-radius:50%;
+    position:fixed; bottom:78px; right:18px; height:52px; border-radius:26px;
     background:var(--accent); color:#0C1210; border:none; font-size:26px; z-index:15;
-    box-shadow:0 4px 14px rgba(0,0,0,.4); cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.4); cursor:pointer; padding:0;
+    width:52px; display:flex; align-items:center; justify-content:center;
   }
+  .fab.fab-text{font-size:14px; font-weight:700; width:auto; padding:0 20px;}
   .timeline-slot{display:flex; gap:10px; margin-bottom:8px;}
   .timeline-time{width:52px; font-size:11px; color:var(--text-dim); padding-top:12px; text-align:right; flex-shrink:0;}
   .timeline-slot .card{flex:1; margin-bottom:0;}
