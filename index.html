@@ -414,6 +414,19 @@
   </div>
 </div>
 
+<!-- MODAL NOTAS -->
+<div class="modal-bg" id="modalNotas">
+  <div class="modal">
+    <h2 id="modalNotasTitle">Notas</h2>
+    <div class="help">Opcional — lista de compras, especificaciones, o registro de lo que se hizo.</div>
+    <textarea id="notasText" placeholder="Ej. Comprar 3 rollos de manguera 1/2 pulg, 8 solenoides 24V..."></textarea>
+    <div class="actions" style="margin-top:10px;">
+      <button class="btn" onclick="closeModal('modalNotas')">Cancelar</button>
+      <button class="btn primary" onclick="guardarNotas()">Guardar nota</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL SWAP -->
 <div class="modal-bg" id="modalSwap">
   <div class="modal">

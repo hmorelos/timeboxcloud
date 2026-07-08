@@ -149,6 +149,28 @@ function switchView(v){
 function closeModal(id){ document.getElementById(id).classList.remove('active'); }
 function openModal(id){ document.getElementById(id).classList.add('active'); }
 
+/* ====================== NOTAS (tarea / cita) ====================== */
+let notasContext = null;
+
+function openNotas(tipo, id){
+  const item = tipo==='tarea' ? state.tasks.find(x=>x.id===id) : state.citas.find(x=>x.id===id);
+  if(!item) return;
+  notasContext = {tipo, id};
+  document.getElementById('notasText').value = item.notas || '';
+  document.getElementById('modalNotasTitle').textContent = 'Notas — ' + item.nombre;
+  openModal('modalNotas');
+}
+
+function guardarNotas(){
+  if(!notasContext) return;
+  const item = notasContext.tipo==='tarea' ? state.tasks.find(x=>x.id===notasContext.id) : state.citas.find(x=>x.id===notasContext.id);
+  if(!item) return;
+  item.notas = document.getElementById('notasText').value;
+  saveState();
+  closeModal('modalNotas');
+  renderAll();
+}
+
 /* ====================== FECHA SELECCIONADA ====================== */
 function cambiarDia(n){
   selectedDate = addDays(selectedDate, n);
@@ -314,6 +336,7 @@ function renderHoy(){
                 <span class="tag ${cat}">${catLabel(cat)}</span>
                 &nbsp;${b.duracionMin} min
                 ${b.tipo!=='cita' ? `&nbsp;· ${done?'✓ hecha':'✗ no terminada'}` : ''}
+                ${b.notas ? `<br>📝 ${escapeHtml(b.notas)}` : ''}
               </div>
             </div>
           </div>
@@ -376,6 +399,7 @@ function renderHoy(){
             <button class="btn small" onclick="moverTarea(${idx},-1)" title="Programar más temprano">⬆</button>
             <button class="btn small" onclick="moverTarea(${idx},1)" title="Programar más tarde">⬇</button>
             ${!isRoutine && !isCita ? `<button class="btn small" onclick="toggleEstatus('${ref.id}')">${doneTask?'↺ Pendiente':'✓ Hecho'}</button>` : ''}
+            ${!isRoutine ? `<button class="btn small" onclick="openNotas('${isCita?'cita':'tarea'}','${ref.id}')">📝 Notas${ref.notas?' •':''}</button>` : ''}
             ${isRoutine ? `<button class="btn small" onclick="toggleRoutineEstatus('${ref.id}','${selectedDate}')">${doneRoutine?'↺ Pendiente':'✓ Hecho'}</button>` : ''}
             ${!isRoutine && !isCita && !agendada ? `<button class="btn small" onclick="openSwap(${idx})">⇄ Cambiar</button>` : ''}
             ${!isRoutine && !isCita && !agendada ? `<button class="btn small" onclick="agendarUno(${idx})">✓ Agendar</button>` : ''}
@@ -632,6 +656,7 @@ function renderPool(){
       </div>
       <div class="actions">
         <button class="btn small" onclick="toggleEstatus('${t.id}')">✓ Hecho</button>
+        <button class="btn small" onclick="openNotas('tarea','${t.id}')">📝 Notas${t.notas?' •':''}</button>
         <button class="btn small" onclick="openTaskModal('${t.id}')">✎ Editar</button>
       </div>
     </div>`;
@@ -663,7 +688,10 @@ function renderRutina(){
           <div class="meta"><span class="tag cita">Cita</span>&nbsp;<span class="tag ${c.categoria}">${catLabel(c.categoria)}</span>&nbsp;${c.fecha} ${c.hora} · ${c.duracion} min</div>
         </div>
       </div>
-      <div class="actions"><button class="btn small" onclick="openCitaModal('${c.id}')">✎ Editar</button></div>
+      <div class="actions">
+        <button class="btn small" onclick="openNotas('cita','${c.id}')">📝 Notas${c.notas?' •':''}</button>
+        <button class="btn small" onclick="openCitaModal('${c.id}')">✎ Editar</button>
+      </div>
     </div>`).join('');
 }
 
@@ -783,7 +811,7 @@ function saveTask(){
     state.tasks.push({
       id: uid(), nombre, importancia, autoUrg, urgencia, deadline, categoria, duracion,
       estatus:'pendiente', createdAt: new Date().toISOString(), completedAt:null,
-      agendadaEn:null
+      agendadaEn:null, notas:''
     });
   }
   saveState();
@@ -890,7 +918,7 @@ function saveCita(){
     const c = state.citas.find(x=>x.id===id);
     Object.assign(c, {nombre, fecha, hora, duracion, categoria});
   } else {
-    state.citas.push({id: uid(), nombre, fecha, hora, duracion, categoria});
+    state.citas.push({id: uid(), nombre, fecha, hora, duracion, categoria, notas:''});
   }
   saveState();
   closeModal('modalCita');
@@ -938,7 +966,7 @@ function procesarImport(){
 
     state.tasks.push({
       id: uid(), nombre, importancia, autoUrg, urgencia, deadline, categoria, duracion,
-      estatus:'pendiente', createdAt: new Date().toISOString(), completedAt:null, agendadaEn:null
+      estatus:'pendiente', createdAt: new Date().toISOString(), completedAt:null, agendadaEn:null, notas:''
     });
     agregadas++;
   });
@@ -1047,7 +1075,7 @@ function procesarImportObjetivo(){
           autoUrg: !!p.tarea.deadline, urgencia: clamp15(p.tarea.urgencia||3),
           deadline: p.tarea.deadline || null, categoria: p.tarea.categoria || (src.categoria||'otro'),
           duracion: p.tarea.duracion || state.config.duracionDefault,
-          estatus:'pendiente', createdAt:new Date().toISOString(), completedAt:null, agendadaEn:null
+          estatus:'pendiente', createdAt:new Date().toISOString(), completedAt:null, agendadaEn:null, notas:''
         };
         state.tasks.push(nueva);
         tareaId = nueva.id;
@@ -1220,9 +1248,9 @@ function guardarSnapshot(fecha){
   const plan = construirPlanDelDia(fecha);
   const bloques = plan.map(b=>{
     if(b.type==='routine') return {tipo:'rutina', nombre:b.ref.nombre, categoria:b.ref.categoria||'rutina', horaInicio:minsToHHMM(b.start), horaFin:minsToHHMM(b.end), duracionMin:b.end-b.start, estatusFinal: rutinaHecha(b.ref.id, fecha) ? 'hecho' : 'pendiente'};
-    if(b.type==='cita') return {tipo:'cita', nombre:b.ref.nombre, categoria:b.ref.categoria, horaInicio:minsToHHMM(b.start), horaFin:minsToHHMM(b.end), duracionMin:b.end-b.start};
+    if(b.type==='cita') return {tipo:'cita', nombre:b.ref.nombre, categoria:b.ref.categoria, horaInicio:minsToHHMM(b.start), horaFin:minsToHHMM(b.end), duracionMin:b.end-b.start, notas: b.ref.notas || ''};
     const t=b.ref;
-    return {tipo:'tarea', nombre:t.nombre, categoria:t.categoria, horaInicio:minsToHHMM(b.start), horaFin:minsToHHMM(b.end), duracionMin:b.end-b.start, importancia:t.importancia, urgencia:urgenciaEfectiva(t), coeficiente:coeficiente(t), agendada: !!t.agendadaEn, estatusFinal: t.estatus};
+    return {tipo:'tarea', nombre:t.nombre, categoria:t.categoria, horaInicio:minsToHHMM(b.start), horaFin:minsToHHMM(b.end), duracionMin:b.end-b.start, importancia:t.importancia, urgencia:urgenciaEfectiva(t), coeficiente:coeficiente(t), agendada: !!t.agendadaEn, estatusFinal: t.estatus, notas: t.notas || ''};
   });
   const totalMin = hhmmToMins(state.config.fin)-hhmmToMins(state.config.inicio);
   const ocupado = bloques.reduce((s,b)=>s+b.duracionMin,0);
