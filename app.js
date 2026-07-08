@@ -206,7 +206,7 @@ function construirPlanDelDia(fecha){
       if(item.tipo === 'rutina'){
         const r = state.routines.find(x=>x.id===item.id);
         if(!r) return;
-        const start = hhmmToMins(r.hora);
+        const start = (item.start !== undefined && item.start !== null) ? item.start : hhmmToMins(r.hora);
         bloques.push({start, end: start + r.duracion, type:'routine', ref:r});
       } else if(item.tipo === 'cita'){
         return; // las citas se agregan siempre abajo, no dependen de overrides
@@ -373,6 +373,8 @@ function renderHoy(){
             </div>
           </div>
           <div class="actions">
+            <button class="btn small" onclick="moverTarea(${idx},-1)" title="Programar más temprano">⬆</button>
+            <button class="btn small" onclick="moverTarea(${idx},1)" title="Programar más tarde">⬇</button>
             ${!isRoutine && !isCita ? `<button class="btn small" onclick="toggleEstatus('${ref.id}')">${doneTask?'↺ Pendiente':'✓ Hecho'}</button>` : ''}
             ${isRoutine ? `<button class="btn small" onclick="toggleRoutineEstatus('${ref.id}','${selectedDate}')">${doneRoutine?'↺ Pendiente':'✓ Hecho'}</button>` : ''}
             ${!isRoutine && !isCita && !agendada ? `<button class="btn small" onclick="openSwap(${idx})">⇄ Cambiar</button>` : ''}
@@ -543,16 +545,62 @@ function doSwap(newTaskId){
   const slot = plan[swapSlotIndex];
   if(!slot || slot.type !== 'task'){ closeModal('modalSwap'); return; }
 
-  const override = plan.filter(b=>b.type!=='cita').map((b,i)=>{
+  const tareaVieja = slot.ref;
+  const tareaNueva = state.tasks.find(t=>t.id===newTaskId);
+
+  const override = plan.filter(b=>b.type!=='cita').map((b)=>{
     if(b===slot){
       return {tipo:'tarea', id:newTaskId, start:b.start};
     }
     if(b.type==='routine') return {tipo:'rutina', id:b.ref.id};
     return {tipo:'tarea', id:b.ref.id, start:b.start};
   });
+
+  // la tarea nueva queda fija ese dia (ya no se sugiere en otras fechas);
+  // la tarea que sale del slot se libera de vuelta al pool flotante.
+  if(tareaNueva) tareaNueva.agendadaEn = selectedDate;
+  if(tareaVieja && tareaVieja.agendadaEn === selectedDate) tareaVieja.agendadaEn = null;
+
   state.planOverrides[selectedDate] = override;
   saveState();
   closeModal('modalSwap');
+  renderAll();
+}
+
+/* ====================== MOVER TAREA (flechas) ====================== */
+function moverTarea(idx, direccion){
+  const plan = construirPlanDelDia(selectedDate);
+  const slot = plan[idx];
+  if(!slot) return;
+  const nuevaPos = idx + direccion;
+  if(nuevaPos < 0 || nuevaPos >= plan.length) return; // ya esta en el extremo
+
+  const nuevoPlan = plan.slice();
+  [nuevoPlan[idx], nuevoPlan[nuevaPos]] = [nuevoPlan[nuevaPos], nuevoPlan[idx]];
+
+  // reempaqueta todo el dia en el nuevo orden, uno tras otro sin huecos
+  const cfg = state.config;
+  let cursor = hhmmToMins(cfg.inicio);
+  const nuevoOverride = [];
+
+  nuevoPlan.forEach(b=>{
+    const dur = b.end - b.start;
+    const start = cursor;
+    if(b.type==='routine'){
+      // solo cambia la hora de la rutina PARA ESTE DIA; su horario base no se toca
+      nuevoOverride.push({tipo:'rutina', id:b.ref.id, start});
+    } else if(b.type==='cita'){
+      // una cita es de un solo uso: mover equivale a reprogramar su hora directamente
+      b.ref.hora = minsToHHMM(start);
+    } else {
+      nuevoOverride.push({tipo:'tarea', id:b.ref.id, start});
+      b.ref.agendadaEn = selectedDate;
+    }
+    cursor += dur;
+  });
+
+  state.planOverrides[selectedDate] = nuevoOverride;
+  saveState();
   renderAll();
 }
 
