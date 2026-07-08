@@ -1,787 +1,440 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<meta name="theme-color" content="#378ADD"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Timebox Bio"/>
-<link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
-<title>Timebox Bio</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1B1F23">
+<title>Planeador</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --accent:#378ADD;--accent-bg:#E6F1FB;--accent-text:#0C447C;
-  --success:#1D9E75;--success-bg:#E1F5EE;--success-text:#085041;
-  --warning:#BA7517;--warning-bg:#FAEEDA;--warning-text:#633806;
-  --danger:#E24B4A;--danger-bg:#FCEBEB;--danger-text:#791F1F;
-  --purple:#7F77DD;--purple-bg:#EEEDFE;--purple-text:#3C3489;
-  --green:#639922;--green-bg:#EAF3DE;--green-text:#27500A;
-  --surface:white;--surface1:#f7f7f5;--surface2:#efefec;
-  --text:#1a1a18;--text2:#5f5e5a;--text3:#9e9d98;
-  --border:#e8e7e2;--border2:#d3d1c7;--radius:8px;
-  --safe-bottom:env(safe-area-inset-bottom,0px);
-}
-@media(prefers-color-scheme:dark){
   :root{
-    --surface:#1e1e1c;--surface1:#272725;--surface2:#2f2f2d;
-    --text:#f0efea;--text2:#b4b2a9;--text3:#6e6d68;
-    --border:#3a3a37;--border2:#4a4a47;
-    --accent-bg:#0c2a47;--accent-text:#85B7EB;
-    --success-bg:#04342c;--success-text:#5DCAA5;
-    --warning-bg:#412402;--warning-text:#EF9F27;
-    --danger-bg:#501313;--danger-text:#F09595;
-    --purple-bg:#26215C;--purple-text:#AFA9EC;
-    --green-bg:#173404;--green-text:#97C459;
+    --bg:#14171A;
+    --panel:#1E2226;
+    --panel-2:#262B30;
+    --line:#33393F;
+    --text:#EDEFF1;
+    --text-dim:#9AA3AB;
+    --accent:#4FA9A0;
+    --danger:#E5484D;
+    --cat-agro:#5C7C3E;
+    --cat-solar:#C98A2C;
+    --cat-airbnb:#3B6FA8;
+    --cat-personal:#7A5FA8;
+    --cat-otro:#5A6268;
+    --cat-rutina:#2E8B84;
+    --cat-cita:#B0538A;
+    --pr-low:#3E7D42;
+    --pr-mid:#C9A227;
+    --pr-high:#D9622B;
+    --pr-overdue:#E5484D;
   }
-}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--surface1);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto}
-input,select,textarea{font-family:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface);color:var(--text);width:100%;margin-bottom:8px;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-textarea{resize:vertical;min-height:52px}
-button{font-family:inherit;cursor:pointer}
-
-/* HEADER */
-.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px 0;position:sticky;top:0;z-index:100}
-.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.app-name{font-size:17px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
-.app-name i{color:var(--accent)}
-.date-badge{font-size:11px;color:var(--text3);background:var(--surface1);padding:3px 8px;border-radius:99px}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
-.stat{background:var(--surface1);border-radius:var(--radius);padding:7px 4px;text-align:center}
-.stat-n{font-size:18px;font-weight:600;color:var(--text)}
-.stat-n.accent{color:var(--accent)}
-.stat-n.danger{color:var(--danger)}
-.stat-n.success{color:var(--success)}
-.stat-l{font-size:10px;color:var(--text3);margin-top:1px}
-
-/* TABS */
-.tabs{display:flex;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);background:var(--surface)}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex-shrink:0;padding:9px 13px;font-size:12px;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;font-weight:500}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-
-/* SECTIONS */
-.sec{display:none;padding:12px 16px 100px}
-.sec.active{display:block}
-.sec-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px}
-
-/* CARDS */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:8px}
-.card.urgent{border-left:3px solid var(--danger)}
-.card.soon{border-left:3px solid var(--warning)}
-.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
-.card-name{font-size:14px;font-weight:500;color:var(--text);flex:1;line-height:1.3}
-.pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;flex-shrink:0;white-space:nowrap}
-.p1{background:var(--accent-bg);color:var(--accent-text)}
-.p2{background:var(--success-bg);color:var(--success-text)}
-.p3{background:var(--warning-bg);color:var(--warning-text)}
-.p4{background:var(--danger-bg);color:var(--danger-text)}
-.card-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:3px}
-.meta-tag{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:2px}
-.dl-pill{font-size:10px;font-weight:600;padding:1px 6px;border-radius:99px}
-.dl-hot{background:var(--danger-bg);color:var(--danger-text)}
-.dl-warn{background:var(--warning-bg);color:var(--warning-text)}
-.dl-ok{background:var(--success-bg);color:var(--success-text)}
-.card-note{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4}
-.btn-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
-.btn{padding:5px 10px;border:1px solid var(--border2);border-radius:var(--radius);background:none;font-size:11px;color:var(--text2)}
-.btn:hover,.btn:active{background:var(--surface1)}
-.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
-.btn.success{border-color:var(--success);color:var(--success)}
-.btn.success:active{background:var(--success-bg)}
-.btn.danger{border-color:transparent;color:var(--danger)}
-.btn.accent{border-color:var(--accent);color:var(--accent)}
-
-/* PLAN BLOCKS */
-.pb{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:7px}
-.pb.bio{border-left:3px solid var(--green)}
-.pb.deep{border-left:3px solid var(--accent)}
-.pb.plan-t{border-left:3px solid var(--purple)}
-.pb.down{border-left:3px solid var(--warning)}
-.pb.food{border-left:3px solid var(--success)}
-.pb.done-block{opacity:.5}
-.pb-time{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px}
-.pb-title{font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.pb-sub{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.4}
-
-/* SCORE UI */
-.score-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.score-lbl{font-size:13px;color:var(--text2);flex:1;min-width:80px}
-.stars{display:flex;gap:3px}
-.star{width:28px;height:28px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface1);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:all .1s;cursor:pointer}
-.star.on{background:var(--accent-bg);color:var(--accent-text);border-color:var(--accent)}
-.star.on.hi{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger)}
-.prio-box{background:var(--surface1);border-radius:var(--radius);padding:8px 11px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
-.prio-box span{font-size:12px;color:var(--text2)}
-.dl-alert{background:var(--warning-bg);border-radius:var(--radius);padding:7px 10px;margin-bottom:8px;font-size:11px;color:var(--warning-text);display:none}
-.add-btn{width:100%;padding:11px;border:none;border-radius:var(--radius);background:var(--accent);color:white;font-size:14px;font-weight:600;margin-top:4px}
-
-/* ROUTINE */
-.routine-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:8px}
-.rc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.rc-name{font-size:14px;font-weight:500;color:var(--text)}
-.action-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
-.action-row:last-child{border:none}
-.adot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
-.atext{font-size:12px;color:var(--text2);flex:1}
-.atime{font-size:10px;color:var(--text3);font-weight:600}
-
-/* ANALYTICS */
-.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.ana-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px}
-.ana-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
-.ana-big{font-size:24px;font-weight:600;color:var(--text)}
-.ana-sub{font-size:11px;color:var(--text3);margin-top:2px}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
-.bar-lbl{font-size:11px;color:var(--text2);width:70px;flex-shrink:0}
-.bar-bg{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
-.bar-fill{height:6px;border-radius:3px;transition:width .3s}
-.bar-val{font-size:10px;color:var(--text3);width:28px;text-align:right}
-.hist-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start}
-.hist-item:last-child{border:none}
-.hist-dot{width:8px;height:8px;border-radius:50%;margin-top:3px;flex-shrink:0}
-.hist-info{flex:1}
-.hist-name{font-size:13px;color:var(--text);font-weight:500}
-.hist-meta{font-size:11px;color:var(--text3);margin-top:2px}
-
-/* MODAL */
-.modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
-.modal-wrap.open{display:flex}
-.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px calc(20px + var(--safe-bottom));width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
-.modal-title{font-size:17px;font-weight:600;color:var(--text);margin-bottom:14px}
-.r-add-row{display:grid;grid-template-columns:1fr 80px auto;gap:6px;align-items:center;margin-bottom:8px}
-.r-add-row input,.r-add-row select{margin:0}
-.icon-btn{width:34px;height:34px;border:1px solid var(--border2);border-radius:var(--radius);background:none;color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px}
-
-/* EMPTY */
-.empty{text-align:center;padding:2rem 1rem;color:var(--text3)}
-.empty i{font-size:32px;margin-bottom:8px;display:block}
-.empty p{font-size:13px;line-height:1.6}
-
-/* INFO BOX */
-.info-box{background:var(--accent-bg);border-radius:var(--radius);padding:9px 12px;margin-bottom:10px;font-size:12px;color:var(--accent-text);display:flex;gap:8px;align-items:flex-start;line-height:1.5}
-
-/* ROW2 */
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-
-/* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:0 0 var(--safe-bottom);z-index:100}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;border:none;background:none;color:var(--text3);font-size:10px;gap:2px;font-family:inherit}
-.nav-btn i{font-size:20px}
-.nav-btn.active{color:var(--accent)}
-
-/* INSTALL BANNER */
-.install-banner{background:var(--purple-bg);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
-.install-banner .ib-text{flex:1;font-size:12px;color:var(--purple-text);line-height:1.5}
-.install-banner button{padding:6px 12px;border:none;border-radius:var(--radius);background:var(--purple);color:white;font-size:12px;font-weight:600;white-space:nowrap}
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    padding-bottom:70px;
+  }
+  header{
+    padding:14px 16px 10px; position:sticky; top:0; background:var(--bg);
+    z-index:10; border-bottom:1px solid var(--line);
+  }
+  header h1{font-size:17px; margin:0 0 2px; font-weight:600; letter-spacing:.2px;}
+  header .sub{font-size:12px; color:var(--text-dim);}
+  nav{
+    display:flex; position:fixed; bottom:0; left:0; right:0;
+    background:var(--panel); border-top:1px solid var(--line); z-index:20;
+  }
+  nav button{
+    flex:1; background:none; border:none; color:var(--text-dim);
+    font-size:10px; padding:9px 1px 7px; cursor:pointer;
+  }
+  nav button.active{color:var(--accent); font-weight:600;}
+  main{padding:12px 14px 20px; max-width:640px; margin:0 auto;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .card{
+    background:var(--panel); border-radius:10px; padding:12px 12px;
+    margin-bottom:10px; border-left:5px solid var(--line);
+  }
+  .card.overdue{border-left-color:var(--pr-overdue);}
+  .card.blocked{opacity:.45;}
+  .card.done{
+    background:linear-gradient(135deg, rgba(62,125,66,.30), var(--panel) 60%);
+    border-left-color:var(--pr-low);
+    box-shadow:0 0 0 1px rgba(79,169,90,.35) inset;
+  }
+  .card.done h3{color:#9FE6AC;}
+  .card.done h3::before{content:"✓ "; color:var(--pr-low); font-weight:800;}
+  .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .card h3{margin:0; font-size:14.5px; font-weight:600;}
+  .card .meta{font-size:11.5px; color:var(--text-dim); margin-top:3px; line-height:1.5;}
+  .tag{
+    display:inline-block; font-size:10px; padding:2px 7px; border-radius:20px;
+    color:#fff; font-weight:600; letter-spacing:.2px;
+  }
+  .tag.agro{background:var(--cat-agro);}
+  .tag.solar{background:var(--cat-solar);}
+  .tag.airbnb{background:var(--cat-airbnb);}
+  .tag.personal{background:var(--cat-personal);}
+  .tag.otro{background:var(--cat-otro);}
+  .tag.rutina{background:var(--cat-rutina);}
+  .tag.cita{background:var(--cat-cita);}
+  .tag.locked{background:#3A3F44; color:var(--text-dim);}
+  .actions{display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;}
+  button.btn{
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    padding:7px 10px; border-radius:7px; font-size:12.5px; cursor:pointer;
+  }
+  button.btn.primary{background:var(--accent); border-color:var(--accent); color:#0C1210; font-weight:600;}
+  button.btn.danger{background:transparent; border-color:var(--danger); color:var(--danger);}
+  button.btn.small{padding:4px 8px; font-size:11px;}
+  input,select,textarea{
+    width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    padding:9px 10px; border-radius:7px; font-size:14px; margin-bottom:8px;
+  }
+  label{font-size:11.5px; color:var(--text-dim); display:block; margin-bottom:3px; margin-top:6px;}
+  .row{display:flex; gap:8px;}
+  .row > div{flex:1;}
+  .section-title{
+    font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-dim);
+    margin:18px 0 8px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .empty{color:var(--text-dim); font-size:13px; padding:20px 0; text-align:center;}
+  .modal-bg{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:50;
+    align-items:flex-end; justify-content:center;
+  }
+  .modal-bg.active{display:flex;}
+  .modal{
+    background:var(--panel); width:100%; max-width:640px; border-radius:14px 14px 0 0;
+    padding:16px 16px 24px; max-height:88vh; overflow-y:auto;
+  }
+  .modal h2{font-size:15px; margin:0 0 12px;}
+  .fab{
+    position:fixed; bottom:78px; right:18px; width:52px; height:52px; border-radius:50%;
+    background:var(--accent); color:#0C1210; border:none; font-size:26px; z-index:15;
+    box-shadow:0 4px 14px rgba(0,0,0,.4); cursor:pointer;
+  }
+  .timeline-slot{display:flex; gap:10px; margin-bottom:8px;}
+  .timeline-time{width:52px; font-size:11px; color:var(--text-dim); padding-top:12px; text-align:right; flex-shrink:0;}
+  .timeline-slot .card{flex:1; margin-bottom:0;}
+  .banner{
+    background:#3A2E1C; border:1px solid #6B4E1E; color:#F2C879; padding:10px 12px;
+    border-radius:8px; font-size:12.5px; margin-bottom:12px;
+  }
+  .banner.crit{background:#3A1C1D; border-color:#6B1E24; color:#F28C8F;}
+  .banner.info{background:#1C2E3A; border-color:#1E4E6B; color:#87C2F2;}
+  .stat-row{display:flex; gap:8px; margin-bottom:14px;}
+  .stat{flex:1; background:var(--panel); border-radius:10px; padding:10px; text-align:center;}
+  .stat b{display:block; font-size:19px;}
+  .stat span{font-size:10.5px; color:var(--text-dim);}
+  a.linklike{color:var(--accent); font-size:12px; cursor:pointer;}
+  .switch-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+  .help{font-size:11px; color:var(--text-dim); margin-top:2px; margin-bottom:10px; line-height:1.5;}
+  textarea{min-height:120px; font-family:monospace; font-size:12.5px;}
+  .datebar{display:flex; align-items:center; gap:6px; margin-bottom:12px;}
+  .datebar input[type=date]{flex:1; margin-bottom:0;}
+  .datebar button{flex-shrink:0;}
+  .progressbar{background:var(--panel-2); border-radius:20px; height:8px; overflow:hidden; margin:6px 0;}
+  .progressbar > div{background:var(--accent); height:100%;}
+  .paso-row{display:flex; align-items:center; gap:8px; font-size:12.5px; padding:5px 0; border-top:1px solid var(--line);}
+  .paso-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .paso-dot.hecho{background:var(--pr-low);}
+  .paso-dot.disponible{background:var(--pr-mid);}
+  .paso-dot.bloqueado{background:var(--text-dim);}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-top">
-    <div class="app-name"><i class="ti ti-clock-bolt"></i> Timebox Bio</div>
-    <span class="date-badge" id="date-lbl"></span>
-  </div>
-  <div class="stats-row">
-    <div class="stat"><div class="stat-n accent" id="s-pool">0</div><div class="stat-l">Pool</div></div>
-    <div class="stat"><div class="stat-n" id="s-plan">0</div><div class="stat-l">Planeadas</div></div>
-    <div class="stat"><div class="stat-n success" id="s-done">0</div><div class="stat-l">Hechas</div></div>
-    <div class="stat"><div class="stat-n danger" id="s-urg">0</div><div class="stat-l">Urgentes</div></div>
-  </div>
-</div>
+<header>
+  <h1 id="headerTitle">Plan</h1>
+  <div class="sub" id="headerSub">—</div>
+</header>
 
-<!-- TAB CONTENT -->
-<div id="sec-agregar" class="sec active">
-  <div id="install-banner" class="install-banner" style="display:none">
-    <div class="ib-text"><strong>Instala la app</strong> — toca el botón de compartir <i class="ti ti-share" style="font-size:12px"></i> y luego "Agregar a pantalla de inicio"</div>
-    <button onclick="document.getElementById('install-banner').style.display='none'">OK</button>
-  </div>
-  <div class="sec-lbl">Nueva tarea</div>
-  <input id="t-nombre" placeholder="¿Qué necesitas hacer?" />
-  <div class="row2">
-    <div>
-      <select id="t-dur">
-        <option value="15">15 min</option><option value="25">25 min</option>
-        <option value="30">30 min</option><option value="45">45 min</option>
-        <option value="60" selected>60 min</option><option value="90">90 min</option>
-        <option value="120">2 horas</option>
-      </select>
-    </div>
-    <div>
-      <select id="t-cat">
-        <option value="trabajo">Trabajo</option><option value="aprendizaje">Aprendizaje</option>
-        <option value="personal">Personal</option><option value="salud">Salud</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
-  </div>
-  <div class="score-row">
-    <span class="score-lbl">Importancia</span>
-    <div class="stars" id="si">
-      <div class="star on" onclick="setStar('i',1)">1</div><div class="star" onclick="setStar('i',2)">2</div>
-      <div class="star" onclick="setStar('i',3)">3</div><div class="star" onclick="setStar('i',4)">4</div>
-      <div class="star" onclick="setStar('i',5)">5</div>
-    </div>
-  </div>
-  <div class="score-row">
-    <span class="score-lbl">Urgencia</span>
-    <div class="stars" id="su">
-      <div class="star on" onclick="setStar('u',1)">1</div><div class="star" onclick="setStar('u',2)">2</div>
-      <div class="star" onclick="setStar('u',3)">3</div><div class="star" onclick="setStar('u',4)">4</div>
-      <div class="star" onclick="setStar('u',5)">5</div>
-    </div>
-  </div>
-  <div class="prio-box">
-    <span>Puntaje de prioridad</span>
-    <span id="prio-prev" style="font-size:14px;font-weight:600;color:var(--accent)">1</span>
-  </div>
-  <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Deadline <span style="font-weight:400;font-style:italic;text-transform:none">(opcional)</span></div>
-  <input type="date" id="t-dl" onchange="previewDL()" />
-  <div class="dl-alert" id="dl-alert"></div>
-  <input id="t-notas" placeholder="Notas (opcional)" />
-  <button class="add-btn" onclick="addTask()"><i class="ti ti-stack-push"></i> Agregar al pool</button>
-</div>
+<main>
 
-<div id="sec-pool" class="sec">
-  <div id="pool-urgent"></div>
-  <div id="pool-list"></div>
-</div>
-
-<div id="sec-plan" class="sec">
-  <div class="info-box"><i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i> Planear ≠ ejecutar. Confirma cada tarea cuando realmente la completes.</div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-    <span style="font-size:15px;font-weight:600;color:var(--text)">Plan del día</span>
-    <button class="btn primary" onclick="generatePlan()"><i class="ti ti-wand"></i> Generar</button>
-  </div>
-  <div id="plan-content">
-    <div class="empty"><i class="ti ti-calendar-bolt"></i><p>Agrega tareas al pool y pulsa Generar.</p></div>
-  </div>
-</div>
-
-<div id="sec-rutinas" class="sec">
-  <div id="routines-list"></div>
-  <button class="add-btn" style="background:var(--surface);color:var(--accent);border:1px solid var(--accent)" onclick="openRM()"><i class="ti ti-plus"></i> Nueva rutina</button>
-</div>
-
-<div id="sec-historial" class="sec">
-  <div id="analytics-content"></div>
-</div>
-
-<div id="sec-config" class="sec">
-  <div class="sec-lbl">Horario biohacker</div>
-  <div class="card">
-    <div class="row2">
-      <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Inicio deep work</div><input type="time" id="cfg-start" value="09:00" onchange="saveConfig()"/></div>
-      <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Fin jornada</div><input type="time" id="cfg-end" value="17:30" onchange="saveConfig()"/></div>
+  <!-- PLAN (antes "Hoy") -->
+  <section class="view active" id="view-hoy">
+    <div class="datebar">
+      <button class="btn small" onclick="cambiarDia(-1)">‹</button>
+      <input type="date" id="selectedDateInput" onchange="onDateChange()">
+      <button class="btn small" onclick="cambiarDia(1)">›</button>
+      <button class="btn small" onclick="irHoy()">Hoy</button>
     </div>
-    <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Despertar</div><input type="time" id="cfg-wake" value="07:30" onchange="saveConfig()" style="width:50%"/></div>
-  </div>
-  <div class="sec-lbl">Notificaciones</div>
-  <div class="card" id="notif-list"></div>
-  <div class="sec-lbl">Datos</div>
-  <div class="card">
-    <div style="font-size:13px;color:var(--text2);margin-bottom:10px">Exportar todo tu historial como JSON para respaldo o análisis externo.</div>
-    <div class="btn-row">
-      <button class="btn accent" onclick="exportData()"><i class="ti ti-download"></i> Exportar datos</button>
-      <button class="btn danger" onclick="clearDone()"><i class="ti ti-trash"></i> Limpiar historial</button>
+    <div id="hoyBanner"></div>
+    <div class="stat-row">
+      <div class="stat"><b id="statPend">0</b><span id="statPendLbl">pendientes</span></div>
+      <div class="stat"><b id="statHoras">0h</b><span>agendadas</span></div>
+      <div class="stat"><b id="statLibre">0h</b><span>libres</span></div>
     </div>
-  </div>
-  <div class="sec-lbl">Instalar app</div>
-  <div class="card">
-    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px">
-      <strong>iPhone / iPad:</strong> Safari → botón compartir <i class="ti ti-share" style="font-size:13px"></i> → "Agregar a pantalla de inicio"<br><br>
-      <strong>Android:</strong> Chrome → menú ⋮ → "Añadir a pantalla de inicio" o "Instalar app"
+    <div class="section-title">
+      <span id="planTitle">Plan del día</span>
+      <span>
+        <a class="linklike" id="btnAgregarTarea" onclick="openAddTaskModal()">+ Tarea</a>
+        &nbsp;&nbsp;
+        <a class="linklike" id="btnAgregarCita" onclick="openCitaModal()">+ Cita</a>
+        &nbsp;&nbsp;
+        <a class="linklike" id="btnAgendarTodo" onclick="agendarTodo()">✓ Agendar todo</a>
+        &nbsp;&nbsp;
+        <a class="linklike" onclick="regenerarPlan()">↻ Regenerar</a>
+      </span>
     </div>
-    <button class="btn primary" id="install-btn" style="display:none" onclick="installPWA()"><i class="ti ti-device-mobile"></i> Instalar ahora</button>
-  </div>
-</div>
+    <div id="planList"></div>
+  </section>
 
-<!-- ROUTINE MODAL -->
-<div class="modal-wrap" id="rm">
+  <!-- POOL -->
+  <section class="view" id="view-pool">
+    <div class="section-title">
+      <span>Pool de tareas</span>
+      <a class="linklike" onclick="openImport()">+ Carga masiva</a>
+    </div>
+    <div id="poolList"></div>
+  </section>
+
+  <!-- AGENDA (rutina + citas) -->
+  <section class="view" id="view-rutina">
+    <div class="section-title"><span>Rutina diaria</span><a class="linklike" onclick="openRoutineModal()">+ Rutina</a></div>
+    <div class="help">Ocupan su horario por defecto todos los días. Movibles manualmente desde "Plan".</div>
+    <div id="rutinaList"></div>
+
+    <div class="section-title"><span>Citas</span><a class="linklike" onclick="openCitaModal()">+ Cita</a></div>
+    <div class="help">Fecha y hora fija, una sola vez. No compiten por prioridad.</div>
+    <div id="citasList"></div>
+  </section>
+
+  <!-- OBJETIVOS -->
+  <section class="view" id="view-objetivos">
+    <div class="section-title">
+      <span>Objetivos</span>
+      <a class="linklike" onclick="openImportObjetivo()">+ Importar</a>
+    </div>
+    <div id="objetivosList"></div>
+  </section>
+
+  <!-- HISTORIAL -->
+  <section class="view" id="view-historial">
+    <div class="section-title"><span>Historial</span></div>
+    <div class="row">
+      <button class="btn" onclick="exportarJSON()">⬇ Exportar JSON</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">⬆ Importar JSON</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importarJSON(event)">
+    <div class="help">Exporta este archivo y pégalo/súbelo en un chat con Claude para que te dé seguimiento y sugerencias. Incluye tus snapshots diarios para análisis histórico.</div>
+    <div id="historialList"></div>
+  </section>
+
+  <!-- CONFIG -->
+  <section class="view" id="view-config">
+    <div class="section-title"><span>Configuración</span></div>
+    <label>Ventana de planeación</label>
+    <div class="row">
+      <div><input type="time" id="cfgInicio"></div>
+      <div><input type="time" id="cfgFin"></div>
+    </div>
+    <label>Duración por defecto de una tarea (min)</label>
+    <input type="number" id="cfgDuracion" min="5" step="5">
+    <label>Aviso de transición (min antes de la siguiente tarea)</label>
+    <input type="number" id="cfgTransicion" min="0" step="5">
+    <button class="btn primary" onclick="guardarConfig()">Guardar configuración</button>
+    <div class="section-title" style="margin-top:24px;"><span>Notificaciones</span></div>
+    <div id="notifStatus" class="help"></div>
+    <button class="btn" onclick="pedirPermisoNotif()">Activar notificaciones</button>
+    <div class="section-title" style="margin-top:24px;"><span>Formato de carga masiva de tareas</span></div>
+    <div class="help">
+      Una tarea por línea, separada por "|":<br>
+      <code>nombre | importancia(1-5) | urgencia(1-5) o fecha AAAA-MM-DD | duración_min | categoria</code><br>
+      Categorías válidas: agro, solar, airbnb, personal, otro
+    </div>
+    <div class="section-title"><span>Formato de importación de objetivos</span></div>
+    <div class="help">
+      Pega el bloque JSON del objetivo diseñado con Claude (ver formato en Config).
+    </div>
+  </section>
+
+</main>
+
+<nav>
+  <button class="active" data-view="hoy" onclick="switchView('hoy')">Plan</button>
+  <button data-view="pool" onclick="switchView('pool')">Pool</button>
+  <button data-view="rutina" onclick="switchView('rutina')">Agenda</button>
+  <button data-view="objetivos" onclick="switchView('objetivos')">Objetivos</button>
+  <button data-view="historial" onclick="switchView('historial')">Historial</button>
+  <button data-view="config" onclick="switchView('config')">Config</button>
+</nav>
+
+<button class="fab" id="fabAdd" onclick="openTaskModal()">+</button>
+
+<!-- MODAL TAREA -->
+<div class="modal-bg" id="modalTarea">
   <div class="modal">
-    <div class="modal-title">Nueva rutina</div>
-    <input id="r-name" placeholder="Nombre (ej: Mañana biohacker)" />
-    <div class="row2" style="margin-bottom:8px">
-      <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Hora de inicio</div><input type="time" id="r-start" value="07:30" style="margin:0"/></div>
-      <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Color</div>
-        <select id="r-color" style="margin:0">
-          <option value="#639922">Verde (bio)</option><option value="#378ADD">Azul (trabajo)</option>
-          <option value="#7F77DD">Morado (mente)</option><option value="#1D9E75">Teal (salud)</option>
-          <option value="#BA7517">Ámbar (noche)</option>
+    <h2 id="modalTareaTitle">Nueva tarea</h2>
+    <input type="hidden" id="tId">
+    <label>Nombre</label>
+    <input type="text" id="tNombre" placeholder="Ej. Comprar fertilizante">
+    <div class="row">
+      <div>
+        <label>Importancia (1-5)</label>
+        <input type="number" id="tImportancia" min="1" max="5" value="3">
+      </div>
+      <div>
+        <label>Categoría</label>
+        <select id="tCategoria">
+          <option value="agro">Agro</option>
+          <option value="solar">Solar</option>
+          <option value="airbnb">Airbnb</option>
+          <option value="personal">Personal</option>
+          <option value="otro">Otro</option>
         </select>
       </div>
     </div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Acciones en orden</div>
-    <div id="r-actions-list"></div>
-    <div class="r-add-row">
-      <input id="r-act-name" placeholder="Acción (ej: Ejercicio)" style="margin:0"/>
-      <select id="r-act-dur" style="margin:0">
-        <option value="5">5m</option><option value="10">10m</option><option value="15">15m</option>
-        <option value="20">20m</option><option value="30" selected>30m</option>
-        <option value="45">45m</option><option value="60">60m</option>
-      </select>
-      <button class="icon-btn" onclick="addRA()"><i class="ti ti-plus"></i></button>
+    <div class="switch-row">
+      <label style="margin:0;">Urgencia automática por deadline</label>
+      <input type="checkbox" id="tAutoUrg" checked onchange="toggleUrgMode()" style="width:auto;">
     </div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn" style="flex:1" onclick="closeRM()">Cancelar</button>
-      <button class="btn primary" style="flex:2" onclick="saveRoutine()">Guardar rutina</button>
+    <div id="urgManualBox">
+      <label>Urgencia manual (1-5)</label>
+      <input type="number" id="tUrgencia" min="1" max="5" value="3">
+    </div>
+    <div id="deadlineBox">
+      <label>Deadline</label>
+      <input type="date" id="tDeadline">
+    </div>
+    <label>Duración estimada (min)</label>
+    <input type="number" id="tDuracion" min="5" step="5" value="30">
+    <div class="actions" style="margin-top:14px;">
+      <button class="btn" onclick="closeModal('modalTarea')">Cancelar</button>
+      <button class="btn danger" id="btnDeleteTask" style="display:none" onclick="deleteTaskFromModal()">Eliminar</button>
+      <button class="btn primary" onclick="saveTask()">Guardar</button>
     </div>
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="nav-btn active" onclick="showSec('agregar',this)"><i class="ti ti-plus"></i>Agregar</button>
-  <button class="nav-btn" onclick="showSec('pool',this)"><i class="ti ti-stack-2"></i>Pool</button>
-  <button class="nav-btn" onclick="showSec('plan',this)"><i class="ti ti-calendar-bolt"></i>Plan</button>
-  <button class="nav-btn" onclick="showSec('rutinas',this)"><i class="ti ti-repeat"></i>Rutinas</button>
-  <button class="nav-btn" onclick="showSec('historial',this)"><i class="ti ti-chart-bar"></i>Historial</button>
-  <button class="nav-btn" onclick="showSec('config',this)"><i class="ti ti-settings"></i>Config</button>
+<!-- MODAL RUTINA -->
+<div class="modal-bg" id="modalRutina">
+  <div class="modal">
+    <h2 id="modalRutinaTitle">Nueva rutina</h2>
+    <input type="hidden" id="rId">
+    <label>Nombre</label>
+    <input type="text" id="rNombre" placeholder="Ej. Revisión de invernadero">
+    <div class="row">
+      <div>
+        <label>Hora de inicio</label>
+        <input type="time" id="rHora">
+      </div>
+      <div>
+        <label>Duración (min)</label>
+        <input type="number" id="rDuracion" min="5" step="5" value="30">
+      </div>
+    </div>
+    <label>Categoría</label>
+    <select id="rCategoria">
+      <option value="rutina">Rutina</option>
+      <option value="agro">Agro</option>
+      <option value="solar">Solar</option>
+      <option value="airbnb">Airbnb</option>
+      <option value="personal">Personal</option>
+      <option value="otro">Otro</option>
+    </select>
+    <div class="actions" style="margin-top:14px;">
+      <button class="btn" onclick="closeModal('modalRutina')">Cancelar</button>
+      <button class="btn danger" id="btnDeleteRoutine" style="display:none" onclick="deleteRoutineFromModal()">Eliminar</button>
+      <button class="btn primary" onclick="saveRoutine()">Guardar</button>
+    </div>
+  </div>
 </div>
 
-<script>
-// ── STORAGE ──
-const DB = {
-  get(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}},
-  set(k,v){localStorage.setItem(k,JSON.stringify(v))},
-};
-
-// ── STATE ──
-let IMP=1,URG=1,tempRA=[];
-let tasks   = DB.get('tb_tasks')   || [];
-let routines= DB.get('tb_routines')|| [];
-let history = DB.get('tb_history') || [];
-let config  = DB.get('tb_config')  || {start:'09:00',end:'17:30',wake:'07:30'};
-let notifs  = DB.get('tb_notifs')  || {block:true,supAM:true,mgNight:true,planning:true,close:true,deadline:true};
-let plannedIds = new Set();
-
-const CATS={trabajo:'🔵',aprendizaje:'🟣',personal:'🟢',salud:'🟡',admin:'⚪'};
-
-// ── UTILS ──
-function pad(n){return String(n).padStart(2,'0')}
-function toM(t){const[h,m]=t.split(':').map(Number);return h*60+m}
-function fromM(m){return pad(Math.floor(m/60))+':'+pad(m%60)}
-function today(){return new Date().toISOString().split('T')[0]}
-function fmtDate(d){return new Date(d+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'})}
-function fmtTime(ts){return new Date(ts).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}
-
-function dlUrgency(dl){
-  if(!dl) return null;
-  const now=new Date();now.setHours(0,0,0,0);
-  const d=new Date(dl+'T00:00:00');
-  const diff=Math.ceil((d-now)/86400000);
-  if(diff<=1)return 1;if(diff<=2)return 2;if(diff<=7)return 3;if(diff<=15)return 4;return 5;
-}
-function dlLabel(dl){
-  if(!dl)return null;
-  const now=new Date();now.setHours(0,0,0,0);
-  const d=new Date(dl+'T00:00:00');
-  const diff=Math.ceil((d-now)/86400000);
-  if(diff<0)return{txt:'Vencida',cls:'dl-hot'};
-  if(diff===0)return{txt:'Hoy',cls:'dl-hot'};
-  if(diff===1)return{txt:'Mañana',cls:'dl-hot'};
-  if(diff<=2)return{txt:diff+'d',cls:'dl-hot'};
-  if(diff<=7)return{txt:diff+'d',cls:'dl-warn'};
-  return{txt:diff+'d',cls:'dl-ok'};
-}
-function effUrg(t){return t.deadline?Math.min(t.urg,dlUrgency(t.deadline)):t.urg}
-function effScore(t){return t.imp*effUrg(t)}
-function prioInfo(s){
-  if(s<=2)return{cls:'p1',lbl:'P1'};
-  if(s<=6)return{cls:'p2',lbl:'P2'};
-  if(s<=12)return{cls:'p3',lbl:'P3'};
-  return{cls:'p4',lbl:'P4'};
-}
-
-// ── HEADER ──
-document.getElementById('date-lbl').textContent=new Date().toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'});
-
-function updateStats(){
-  const pool=tasks.length;
-  const planned=tasks.filter(t=>plannedIds.has(t.id)).length;
-  const done=history.length;
-  const urg=tasks.filter(t=>effScore(t)<=2).length;
-  document.getElementById('s-pool').textContent=pool;
-  document.getElementById('s-plan').textContent=planned;
-  document.getElementById('s-done').textContent=done;
-  document.getElementById('s-urg').textContent=urg;
-}
-
-// ── AGREGAR ──
-function setStar(type,val){
-  if(type==='i')IMP=val;else URG=val;
-  const id=type==='i'?'si':'su';
-  document.querySelectorAll('#'+id+' .star').forEach((s,i)=>{
-    s.classList.toggle('on',i<val);
-    s.classList.toggle('hi',i<val&&val>=4);
-  });
-  updatePrioPreview();
-}
-function updatePrioPreview(){
-  const s=IMP*URG;
-  const p=prioInfo(s);
-  document.getElementById('prio-prev').innerHTML=`${IMP}×${URG}=<strong>${s}</strong> <span class="pill ${p.cls}" style="font-size:10px">${p.lbl}</span>`;
-}
-function previewDL(){
-  const dl=document.getElementById('t-dl').value;
-  const box=document.getElementById('dl-alert');
-  if(!dl){box.style.display='none';return;}
-  const du=dlUrgency(dl);
-  const lbl=dlLabel(dl);
-  box.style.display='block';
-  box.innerHTML=`<i class="ti ti-clock-exclamation"></i> Deadline detectado — urgencia auto: <strong>${du}</strong> (${lbl?lbl.txt:''})`;
-  URG=Math.min(URG,du);setStar('u',URG);
-}
-function addTask(){
-  const n=document.getElementById('t-nombre').value.trim();
-  if(!n)return;
-  const dl=document.getElementById('t-dl').value||null;
-  const t={
-    id:Date.now(),nombre:n,
-    dur:parseInt(document.getElementById('t-dur').value),
-    cat:document.getElementById('t-cat').value,
-    imp:IMP,urg:URG,deadline:dl,
-    notas:document.getElementById('t-notas').value.trim(),
-    createdAt:Date.now()
-  };
-  tasks.push(t);save();updateStats();renderPool();
-  document.getElementById('t-nombre').value='';
-  document.getElementById('t-notas').value='';
-  document.getElementById('t-dl').value='';
-  document.getElementById('dl-alert').style.display='none';
-  setStar('i',1);setStar('u',1);
-  showSec('pool',document.querySelectorAll('.nav-btn')[1]);
-}
-
-// ── POOL ──
-function renderPool(){
-  const sorted=[...tasks].map(t=>({...t,eScore:effScore(t)})).sort((a,b)=>a.eScore-b.eScore);
-  const urgent=sorted.filter(t=>t.eScore<=2);
-  const rest=sorted.filter(t=>t.eScore>2);
-  const urgDiv=document.getElementById('pool-urgent');
-  const listDiv=document.getElementById('pool-list');
-  if(urgent.length){
-    urgDiv.innerHTML=`<div class="sec-lbl" style="color:var(--danger)"><i class="ti ti-alert-triangle"></i> Urgentes</div>`+urgent.map(taskCardHTML).join('');
-  }else urgDiv.innerHTML='';
-  if(rest.length){
-    listDiv.innerHTML=`<div class="sec-lbl">Backlog</div>`+rest.map(taskCardHTML).join('');
-  }else if(!urgent.length){
-    listDiv.innerHTML='<div class="empty"><i class="ti ti-stack-2"></i><p>Pool vacío. Agrega tareas.</p></div>';
-  }else listDiv.innerHTML='';
-}
-function taskCardHTML(t){
-  const eu=effUrg(t);const s=t.imp*eu;
-  const p=prioInfo(s);
-  const dl=t.deadline?dlLabel(t.deadline):null;
-  const isUrgent=s<=2;const isSoon=s<=6&&s>2;
-  const isPlanned=plannedIds.has(t.id);
-  return `<div class="card ${isUrgent?'urgent':isSoon?'soon':''}">
-    <div class="card-top">
-      <div class="card-name">${t.nombre}</div>
-      <span class="pill ${p.cls}">${p.lbl}·${s}</span>
-    </div>
-    <div class="card-meta">
-      <span class="meta-tag"><i class="ti ti-clock" style="font-size:11px"></i>${t.dur}m</span>
-      <span class="meta-tag">${CATS[t.cat]||''}${t.cat}</span>
-      <span class="meta-tag">I:${t.imp} U:${eu}${eu!==t.urg?' <span style="font-size:9px;color:var(--danger)">(auto)</span>':''}</span>
-      ${dl?`<span class="dl-pill ${dl.cls}"><i class="ti ti-calendar-due" style="font-size:10px"></i>${dl.txt}</span>`:''}
-      ${isPlanned?'<span class="pill p2">En plan</span>':''}
-    </div>
-    ${t.notas?`<div class="card-note">${t.notas}</div>`:''}
-    <div class="btn-row">
-      <button class="btn success" onclick="confirmDone(${t.id})"><i class="ti ti-check"></i> Ejecutada</button>
-      <button class="btn danger" onclick="deleteTask(${t.id})"><i class="ti ti-trash"></i></button>
-    </div>
-  </div>`;
-}
-function confirmDone(id){
-  const t=tasks.find(x=>x.id===id);if(!t)return;
-  history.push({...t,doneAt:Date.now(),eScore:effScore(t)});
-  tasks=tasks.filter(x=>x.id!==id);plannedIds.delete(id);
-  save();updateStats();renderPool();
-  if(document.getElementById('sec-plan').classList.contains('active'))generatePlan();
-  if(document.getElementById('sec-historial').classList.contains('active'))renderAnalytics();
-}
-function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);plannedIds.delete(id);save();updateStats();renderPool();}
-
-// ── PLAN ──
-function generatePlan(){
-  const ws=toM(config.start);const we=toM(config.end);
-  const wake=toM(config.wake);
-  const pool=[...tasks].map(t=>({...t,eScore:effScore(t)})).sort((a,b)=>a.eScore-b.eScore);
-  plannedIds.clear();
-
-  const fixed=[
-    {title:'Luz solar + activación circadiana',start:wake,end:wake+10,type:'bio',sub:'Sin celular. Ancla cortisol AM.'},
-    {title:'Ejercicio',start:wake+10,end:wake+40,type:'bio',sub:'HIIT o fuerza. Testosterona y BDNF máximos.'},
-    {title:'Ducha fría + desayuno + suplementos AM',start:wake+40,end:ws,type:'bio',sub:'Norepinefrina +200%. Creatina · Omega-3 · Ác. fólico.'},
-    {title:'Comida principal',start:toM('12:00'),end:toM('13:00'),type:'food',sub:'Proteína + carbos. Caminata 10 min post.'},
-    {title:'Descompresión activa',start:we,end:we+90,type:'down',sub:'Caminar, leer, estirar. Luz cálida.'},
-    {title:'Planeación · timeboxing día siguiente',start:toM('20:00'),end:toM('20:30'),type:'plan-t',sub:'Brain dump + 3 prioridades de mañana.'},
-    {title:'Pre-sueño · Mg L-treonato 1-2g',start:toM('20:30'),end:toM('21:30'),type:'down',sub:'Journaling. Cuarto 18-20°C.'},
-    {title:'Cierre cognitivo',start:toM('21:30'),end:toM('22:00'),type:'down',sub:'Respiración 4-7-8. Sin celular.'},
-  ];
-
-  // Routine blocks
-  const rBlocks=[];
-  routines.forEach(r=>{
-    let cur=toM(r.start);
-    r.actions.forEach(a=>{
-      rBlocks.push({title:`${r.name}: ${a.name}`,start:cur,end:cur+a.dur,type:'bio',sub:`Rutina ${r.name}`,color:r.color});
-      cur+=a.dur;
-    });
-  });
-
-  let blocks=[...fixed,...rBlocks];
-  let cursor=ws;
-
-  pool.forEach(task=>{
-    let placed=false,tries=0;
-    while(!placed&&tries<30){
-      const end=cursor+task.dur;
-      if(end>we)break;
-      const conflict=blocks.some(b=>cursor<b.end&&end>b.start);
-      if(!conflict){
-        blocks.push({title:task.nombre,start:cursor,end:cursor+task.dur,type:'deep',
-          sub:`I:${task.imp} · U:${effUrg(task)} · Score:${task.eScore} · ${task.cat}`,
-          taskId:task.id,score:task.eScore});
-        plannedIds.add(task.id);
-        cursor=cursor+task.dur+10;placed=true;
-      }else{
-        const bl=blocks.filter(b=>cursor<b.end&&(cursor+task.dur)>b.start).sort((a,b)=>b.end-a.end);
-        cursor=bl.length?bl[0].end+5:cursor+5;
-      }
-      tries++;
-    }
-  });
-
-  blocks.sort((a,b)=>a.start-b.start);
-  updateStats();
-
-  const done=new Set(history.map(h=>h.id));
-  document.getElementById('plan-content').innerHTML=blocks.map(b=>{
-    const p=b.score?prioInfo(b.score):null;
-    const isDone=b.taskId&&done.has(b.taskId);
-    const borderColor=b.color?`border-left-color:${b.color}`:'';
-    return `<div class="pb ${b.type}${isDone?' done-block':''}" style="${borderColor}">
-      <div class="pb-time">${fromM(b.start)} – ${fromM(b.end)}</div>
-      <div class="pb-title">${b.title}
-        ${p?`<span class="pill ${p.cls}" style="font-size:9px">${p.lbl}</span>`:''}
-        ${isDone?'<span class="pill p2" style="font-size:9px">Hecha</span>':''}
+<!-- MODAL CITA -->
+<div class="modal-bg" id="modalCita">
+  <div class="modal">
+    <h2 id="modalCitaTitle">Nueva cita</h2>
+    <input type="hidden" id="cId">
+    <label>Nombre</label>
+    <input type="text" id="cNombre" placeholder="Ej. Junta con proveedor">
+    <div class="row">
+      <div>
+        <label>Fecha</label>
+        <input type="date" id="cFecha">
       </div>
-      ${b.sub?`<div class="pb-sub">${b.sub}</div>`:''}
-      ${b.taskId&&!isDone?`<div class="btn-row" style="margin-top:7px">
-        <button class="btn success" onclick="confirmDoneFromPlan(${b.taskId})"><i class="ti ti-check"></i> Confirmar ejecución</button>
-      </div>`:''}
-    </div>`;
-  }).join('');
-}
-function confirmDoneFromPlan(id){
-  confirmDone(id);
-}
-
-// ── RUTINAS ──
-function addRA(){
-  const n=document.getElementById('r-act-name').value.trim();
-  const d=parseInt(document.getElementById('r-act-dur').value);
-  if(!n)return;
-  tempRA.push({name:n,dur:d});
-  document.getElementById('r-act-name').value='';
-  renderRA();
-}
-function renderRA(){
-  const c=document.getElementById('r-actions-list');
-  if(!tempRA.length){c.innerHTML='';return;}
-  let cur=toM(document.getElementById('r-start').value||'07:30');
-  c.innerHTML=tempRA.map((a,i)=>{
-    const t=fromM(cur);cur+=a.dur;
-    return `<div class="action-row">
-      <div class="adot" style="background:${document.getElementById('r-color').value}"></div>
-      <div class="atext">${a.name}</div>
-      <div class="atime">${t}·${a.dur}m</div>
-      <button onclick="tempRA.splice(${i},1);renderRA()" style="border:none;background:none;color:var(--text3);font-size:14px;cursor:pointer;padding:0 4px"><i class="ti ti-x"></i></button>
-    </div>`;
-  }).join('');
-}
-function openRM(){tempRA=[];document.getElementById('r-name').value='';document.getElementById('r-actions-list').innerHTML='';document.getElementById('rm').classList.add('open');}
-function closeRM(){document.getElementById('rm').classList.remove('open');}
-function saveRoutine(){
-  const n=document.getElementById('r-name').value.trim();
-  if(!n||!tempRA.length)return;
-  routines.push({id:Date.now(),name:n,start:document.getElementById('r-start').value||'07:30',color:document.getElementById('r-color').value,actions:[...tempRA]});
-  save();closeRM();renderRoutines();
-}
-function renderRoutines(){
-  const c=document.getElementById('routines-list');
-  if(!routines.length){c.innerHTML='<div class="empty"><i class="ti ti-repeat"></i><p>Sin rutinas aún. Crea tu primera rutina y se convertirá en bloques automáticos en el plan.</p></div>';return;}
-  c.innerHTML=routines.map(r=>{
-    let cur=toM(r.start);
-    const total=r.actions.reduce((s,a)=>s+a.dur,0);
-    const acts=r.actions.map(a=>{const t=fromM(cur);cur+=a.dur;
-      return `<div class="action-row"><div class="adot" style="background:${r.color||'#639922'}"></div><div class="atext">${a.name}</div><div class="atime">${t}·${a.dur}m</div></div>`;
-    }).join('');
-    return `<div class="routine-card">
-      <div class="rc-head">
-        <div class="rc-name"><i class="ti ti-repeat" style="color:${r.color||'#639922'}"></i> ${r.name}</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:11px;color:var(--text3)">${r.start} · ${total}m</span>
-          <button class="btn danger" onclick="deleteRoutine(${r.id})"><i class="ti ti-trash"></i></button>
-        </div>
-      </div>${acts}
-    </div>`;
-  }).join('');
-}
-function deleteRoutine(id){routines=routines.filter(r=>r.id!==id);save();renderRoutines();}
-
-// ── ANALYTICS ──
-function renderAnalytics(){
-  const c=document.getElementById('analytics-content');
-  if(!history.length){
-    c.innerHTML='<div class="empty"><i class="ti ti-chart-bar"></i><p>Completa tareas para ver tu historial y análisis.</p></div>';
-    return;
-  }
-  const totalDone=history.length;
-  const totalMins=history.reduce((s,t)=>s+t.dur,0);
-  const avgScore=history.length?Math.round(history.reduce((s,t)=>s+(t.eScore||t.imp*t.urg),0)/history.length*10)/10:0;
-
-  // By category
-  const byCat={};
-  history.forEach(t=>{byCat[t.cat]=(byCat[t.cat]||0)+1;});
-  const maxCat=Math.max(...Object.values(byCat));
-  const catBars=Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>
-    `<div class="bar-row">
-      <span class="bar-lbl">${CATS[k]||''} ${k}</span>
-      <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(v/maxCat*100)}%;background:var(--accent)"></div></div>
-      <span class="bar-val">${v}</span>
-    </div>`
-  ).join('');
-
-  // By week day
-  const byDay={};
-  history.forEach(t=>{
-    const d=new Date(t.doneAt).toLocaleDateString('es-MX',{weekday:'short'});
-    byDay[d]=(byDay[d]||0)+1;
-  });
-
-  // Recent history
-  const recent=[...history].sort((a,b)=>b.doneAt-a.doneAt).slice(0,15);
-
-  c.innerHTML=`
-    <div class="sec-lbl">Resumen</div>
-    <div class="analytics-grid">
-      <div class="ana-card"><div class="ana-title">Tareas completadas</div><div class="ana-big">${totalDone}</div><div class="ana-sub">total histórico</div></div>
-      <div class="ana-card"><div class="ana-title">Tiempo ejecutado</div><div class="ana-big">${Math.round(totalMins/60*10)/10}h</div><div class="ana-sub">${totalMins} min total</div></div>
-      <div class="ana-card"><div class="ana-title">Score promedio</div><div class="ana-big">${avgScore}</div><div class="ana-sub">prioridad media</div></div>
-      <div class="ana-card"><div class="ana-title">Esta semana</div><div class="ana-big">${history.filter(t=>Date.now()-t.doneAt<7*86400000).length}</div><div class="ana-sub">tareas en 7 días</div></div>
-    </div>
-    <div class="sec-lbl">Por categoría</div>
-    <div class="card">${catBars}</div>
-    <div class="sec-lbl">Últimas completadas</div>
-    <div class="card">
-      ${recent.map(t=>{
-        const p=prioInfo(t.eScore||t.imp*t.urg);
-        return `<div class="hist-item">
-          <div class="hist-dot" style="background:${t.cat==='trabajo'?'#378ADD':t.cat==='aprendizaje'?'#7F77DD':t.cat==='salud'?'#639922':'#1D9E75'}"></div>
-          <div class="hist-info">
-            <div class="hist-name">${t.nombre}</div>
-            <div class="hist-meta">${CATS[t.cat]||''} ${t.cat} · ${t.dur}m · <span class="pill ${p.cls}" style="font-size:9px">${p.lbl}</span> · ${fmtTime(t.doneAt)}</div>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>`;
-}
-
-// ── CONFIG ──
-function saveConfig(){
-  config={start:document.getElementById('cfg-start').value,end:document.getElementById('cfg-end').value,wake:document.getElementById('cfg-wake').value};
-  DB.set('tb_config',config);
-}
-function renderNotifs(){
-  const keys={block:'Inicio de bloque',supAM:'Suplementos AM (8:25)',mgNight:'Mg L-treonato (19:55)',planning:'Planeación diaria (20:00)',close:'Cierre cognitivo (21:20)',deadline:'Alerta de deadline'};
-  document.getElementById('notif-list').innerHTML=Object.entries(keys).map(([k,lbl])=>
-    `<div class="btn-row" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px;color:var(--text)">${lbl}</span>
-      <div style="width:36px;height:20px;background:${notifs[k]?'var(--accent)':'var(--border2)'};border-radius:10px;cursor:pointer;position:relative;transition:background .2s" onclick="toggleNotif('${k}',this)">
-        <div style="width:16px;height:16px;background:white;border-radius:50%;position:absolute;top:2px;${notifs[k]?'left:18px':'left:2px'};transition:left .2s"></div>
+      <div>
+        <label>Hora</label>
+        <input type="time" id="cHora">
       </div>
-    </div>`
-  ).join('');
-}
-function toggleNotif(k,el){
-  notifs[k]=!notifs[k];DB.set('tb_notifs',notifs);
-  el.style.background=notifs[k]?'var(--accent)':'var(--border2)';
-  el.firstElementChild.style.left=notifs[k]?'18px':'2px';
-}
-function exportData(){
-  const data={tasks,history,routines,config,exportedAt:new Date().toISOString()};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`timebox-bio-${today()}.json`;a.click();
-  URL.revokeObjectURL(url);
-}
-function clearDone(){
-  if(!confirm('¿Limpiar el historial de tareas completadas?'))return;
-  history=[];save();updateStats();renderAnalytics();
-}
+    </div>
+    <div class="row">
+      <div>
+        <label>Duración (min)</label>
+        <input type="number" id="cDuracion" min="5" step="5" value="60">
+      </div>
+      <div>
+        <label>Categoría</label>
+        <select id="cCategoria">
+          <option value="agro">Agro</option>
+          <option value="solar">Solar</option>
+          <option value="airbnb">Airbnb</option>
+          <option value="personal">Personal</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+    </div>
+    <div class="actions" style="margin-top:14px;">
+      <button class="btn" onclick="closeModal('modalCita')">Cancelar</button>
+      <button class="btn danger" id="btnDeleteCita" style="display:none" onclick="deleteCitaFromModal()">Eliminar</button>
+      <button class="btn primary" onclick="saveCita()">Guardar</button>
+    </div>
+  </div>
+</div>
 
-// ── SAVE ──
-function save(){
-  DB.set('tb_tasks',tasks);
-  DB.set('tb_routines',routines);
-  DB.set('tb_history',history);
-}
+<!-- MODAL IMPORT TAREAS -->
+<div class="modal-bg" id="modalImport">
+  <div class="modal">
+    <h2>Carga masiva de tareas</h2>
+    <div class="help">Pega tu lista, una tarea por línea (ver formato en Config).</div>
+    <textarea id="importText" placeholder="Cotizar bomba de riego | 2 | 2026-07-10 | 45 | agro"></textarea>
+    <div class="actions" style="margin-top:10px;">
+      <button class="btn" onclick="closeModal('modalImport')">Cancelar</button>
+      <button class="btn primary" onclick="procesarImport()">Cargar al pool</button>
+    </div>
+  </div>
+</div>
 
-// ── NAV ──
-function showSec(name,btn){
-  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('sec-'+name).classList.add('active');
-  if(btn)btn.classList.add('active');
-  if(name==='pool')renderPool();
-  if(name==='rutinas')renderRoutines();
-  if(name==='historial')renderAnalytics();
-  if(name==='config'){renderNotifs();document.getElementById('cfg-start').value=config.start;document.getElementById('cfg-end').value=config.end;document.getElementById('cfg-wake').value=config.wake;}
-}
+<!-- MODAL IMPORT OBJETIVO -->
+<div class="modal-bg" id="modalImportObjetivo">
+  <div class="modal">
+    <h2>Importar objetivo</h2>
+    <div class="help">Pega el bloque JSON del objetivo diseñado con Claude.</div>
+    <textarea id="importObjetivoText" placeholder='{"objetivo": {...}}'></textarea>
+    <div class="actions" style="margin-top:10px;">
+      <button class="btn" onclick="closeModal('modalImportObjetivo')">Cancelar</button>
+      <button class="btn primary" onclick="procesarImportObjetivo()">Cargar objetivo</button>
+    </div>
+  </div>
+</div>
 
-// ── PWA INSTALL ──
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();deferredPrompt=e;
-  document.getElementById('install-btn').style.display='block';
-  document.getElementById('install-banner').style.display='flex';
-});
-function installPWA(){
-  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('install-btn').style.display='none';});}
-}
+<!-- MODAL SWAP -->
+<div class="modal-bg" id="modalSwap">
+  <div class="modal">
+    <h2>Elegir tarea del pool</h2>
+    <div id="swapList"></div>
+    <div class="actions" style="margin-top:10px;">
+      <button class="btn" onclick="closeModal('modalSwap')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-// ── SERVICE WORKER ──
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js');
-}
+<!-- MODAL AGREGAR TAREA AL DIA -->
+<div class="modal-bg" id="modalAgregarTarea">
+  <div class="modal">
+    <h2>Agregar tarea al día</h2>
+    <div class="help">Se acomoda en el primer espacio libre que tengas ese día.</div>
+    <div id="addTaskList"></div>
+    <div class="actions" style="margin-top:10px;">
+      <button class="btn" onclick="closeModal('modalAgregarTarea')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-// ── NOTIFICATIONS ──
-if('Notification' in window && Notification.permission==='default'){
-  Notification.requestPermission();
-}
-function scheduleNotif(title,body,delay){
-  if(!('Notification' in window)||Notification.permission!=='granted')return;
-  setTimeout(()=>new Notification(title,{body,icon:'icon-192.png'}),delay);
-}
-
-// ── INIT ──
-updateStats();
-updatePrioPreview();
-
-// Show install banner on iOS
-const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-const isStandalone=window.navigator.standalone;
-if(isIOS&&!isStandalone){document.getElementById('install-banner').style.display='flex';}
-</script>
+<script src="app.js"></script>
 </body>
 </html>
