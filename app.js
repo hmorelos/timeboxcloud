@@ -635,6 +635,10 @@ function renderObjetivos(){
           <div class="meta"><span class="tag ${obj.categoria}">${catLabel(obj.categoria)}</span>&nbsp;${pct}% completado</div>
           <div class="progressbar"><div style="width:${pct}%"></div></div>
           ${pasosHtml}
+          <div class="actions">
+            <button class="btn small" onclick="editarObjetivo('${obj.id}')">✎ Editar</button>
+            <button class="btn small danger" onclick="eliminarObjetivo('${obj.id}')">🗑 Eliminar</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -890,9 +894,50 @@ function procesarImport(){
   alert(agregadas + ' tarea(s) agregadas al pool.');
 }
 
+let editingObjetivoId = null;
+
 function openImportObjetivo(){
+  editingObjetivoId = null;
   document.getElementById('importObjetivoText').value = '';
+  document.getElementById('modalImportObjetivoTitle').textContent = 'Importar objetivo';
+  document.getElementById('btnCargarObjetivo').textContent = 'Cargar objetivo';
   openModal('modalImportObjetivo');
+}
+
+function exportObjetivoToJSON(obj){
+  return {
+    objetivo: {
+      nombre: obj.nombre,
+      categoria: obj.categoria,
+      pasos: obj.pasos.map(p=>{
+        const t = state.tasks.find(x=>x.id===p.tareaId);
+        let tarea = null;
+        if(t){
+          tarea = { nombre: t.nombre, importancia: t.importancia, categoria: t.categoria, duracion: t.duracion };
+          if(t.autoUrg) tarea.deadline = t.deadline;
+          else tarea.urgencia = t.urgencia;
+        }
+        return { clave: p.clave, nombre: p.nombre, dependeDe: p.dependeDe, tarea };
+      })
+    }
+  };
+}
+
+function editarObjetivo(id){
+  const obj = state.objetivos.find(x=>x.id===id);
+  if(!obj) return;
+  editingObjetivoId = id;
+  document.getElementById('importObjetivoText').value = JSON.stringify(exportObjetivoToJSON(obj), null, 2);
+  document.getElementById('modalImportObjetivoTitle').textContent = 'Editar objetivo';
+  document.getElementById('btnCargarObjetivo').textContent = 'Guardar cambios';
+  openModal('modalImportObjetivo');
+}
+
+function eliminarObjetivo(id){
+  if(!confirm('¿Eliminar este objetivo? Las tareas ligadas se quedan en el pool, ya sin bloqueo.')) return;
+  state.objetivos = state.objetivos.filter(x=>x.id!==id);
+  saveState();
+  renderAll();
 }
 
 function procesarImportObjetivo(){
@@ -902,11 +947,28 @@ function procesarImportObjetivo(){
   const src = data.objetivo || data;
   if(!src || !src.nombre || !Array.isArray(src.pasos)){ alert('Formato inválido: falta nombre o pasos.'); return; }
 
-  const obj = { id: uid(), nombre: src.nombre, categoria: (src.categoria||'otro'), pasos: [] };
+  const objExistente = editingObjetivoId ? state.objetivos.find(x=>x.id===editingObjetivoId) : null;
+  const pasos = [];
 
   src.pasos.forEach(p=>{
     let tareaId = null;
-    if(p.tarea){
+    const pasoPrevio = objExistente ? objExistente.pasos.find(pp=>pp.clave===p.clave) : null;
+
+    if(pasoPrevio && pasoPrevio.tareaId && state.tasks.find(t=>t.id===pasoPrevio.tareaId)){
+      // paso ya existia en este objetivo: actualiza la misma tarea en vez de crear otra
+      tareaId = pasoPrevio.tareaId;
+      if(p.tarea){
+        const t = state.tasks.find(x=>x.id===tareaId);
+        Object.assign(t, {
+          nombre: p.tarea.nombre || t.nombre,
+          importancia: clamp15(p.tarea.importancia || t.importancia),
+          categoria: p.tarea.categoria || t.categoria,
+          duracion: p.tarea.duracion || t.duracion
+        });
+        if(p.tarea.deadline){ t.autoUrg = true; t.deadline = p.tarea.deadline; }
+        else if(p.tarea.urgencia){ t.autoUrg = false; t.urgencia = clamp15(p.tarea.urgencia); }
+      }
+    } else if(p.tarea){
       const existente = state.tasks.find(t=> t.nombre.toLowerCase() === (p.tarea.nombre||'').toLowerCase());
       if(existente){
         tareaId = existente.id;
@@ -914,7 +976,7 @@ function procesarImportObjetivo(){
         const nueva = {
           id: uid(), nombre: p.tarea.nombre, importancia: clamp15(p.tarea.importancia||3),
           autoUrg: !!p.tarea.deadline, urgencia: clamp15(p.tarea.urgencia||3),
-          deadline: p.tarea.deadline || null, categoria: p.tarea.categoria || obj.categoria,
+          deadline: p.tarea.deadline || null, categoria: p.tarea.categoria || (src.categoria||'otro'),
           duracion: p.tarea.duracion || state.config.duracionDefault,
           estatus:'pendiente', createdAt:new Date().toISOString(), completedAt:null, agendadaEn:null
         };
@@ -922,9 +984,22 @@ function procesarImportObjetivo(){
         tareaId = nueva.id;
       }
     }
-    obj.pasos.push({ clave: p.clave || uid(), nombre: p.nombre || p.clave, dependeDe: p.dependeDe || [], tareaId });
+    pasos.push({ clave: p.clave || uid(), nombre: p.nombre || p.clave, dependeDe: p.dependeDe || [], tareaId });
   });
 
+  if(objExistente){
+    objExistente.nombre = src.nombre;
+    objExistente.categoria = src.categoria || objExistente.categoria;
+    objExistente.pasos = pasos;
+    editingObjetivoId = null;
+    saveState();
+    closeModal('modalImportObjetivo');
+    renderAll();
+    alert('Objetivo "' + objExistente.nombre + '" actualizado.');
+    return;
+  }
+
+  const obj = { id: uid(), nombre: src.nombre, categoria: (src.categoria||'otro'), pasos };
   state.objetivos.push(obj);
   saveState();
   closeModal('modalImportObjetivo');

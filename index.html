@@ -402,12 +402,12 @@
 <!-- MODAL IMPORT OBJETIVO -->
 <div class="modal-bg" id="modalImportObjetivo">
   <div class="modal">
-    <h2>Importar objetivo</h2>
+    <h2 id="modalImportObjetivoTitle">Importar objetivo</h2>
     <div class="help">Pega el bloque JSON del objetivo diseñado con Claude.</div>
     <textarea id="importObjetivoText" placeholder='{"objetivo": {...}}'></textarea>
     <div class="actions" style="margin-top:10px;">
       <button class="btn" onclick="closeModal('modalImportObjetivo')">Cancelar</button>
-      <button class="btn primary" onclick="procesarImportObjetivo()">Cargar objetivo</button>
+      <button class="btn primary" id="btnCargarObjetivo" onclick="procesarImportObjetivo()">Cargar objetivo</button>
     </div>
   </div>
 </div>
