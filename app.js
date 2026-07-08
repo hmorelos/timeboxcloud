@@ -940,8 +940,23 @@ function editarObjetivo(id){
 }
 
 function eliminarObjetivo(id){
-  if(!confirm('¿Eliminar este objetivo? Las tareas ligadas se quedan en el pool, ya sin bloqueo.')) return;
+  const obj = state.objetivos.find(x=>x.id===id);
+  if(!obj) return;
+  if(!confirm('¿Eliminar este objetivo y sus tareas ligadas del pool?')) return;
+
+  const idsDelObjetivo = obj.pasos.map(p=>p.tareaId).filter(Boolean);
   state.objetivos = state.objetivos.filter(x=>x.id!==id);
+
+  // si alguna de esas tareas sigue ligada a OTRO objetivo que quede, no se borra
+  const idsUsadosEnOtros = new Set();
+  state.objetivos.forEach(o=> o.pasos.forEach(p=>{ if(p.tareaId) idsUsadosEnOtros.add(p.tareaId); }));
+  const idsABorrar = idsDelObjetivo.filter(tid => !idsUsadosEnOtros.has(tid));
+
+  state.tasks = state.tasks.filter(t => !idsABorrar.includes(t.id));
+  Object.keys(state.planOverrides).forEach(fecha=>{
+    state.planOverrides[fecha] = state.planOverrides[fecha].filter(o => !(o.tipo==='tarea' && idsABorrar.includes(o.id)));
+  });
+
   saveState();
   renderAll();
 }
