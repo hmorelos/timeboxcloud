@@ -1,103 +1,189 @@
-# Planeador Diario — Guía de instalación y uso
+# Planeador Diario — Manual de uso
 
-## 1. Cómo ponerla en tu celular (Android)
+Esta app organiza tu día según prioridad, con rutina fija, citas, objetivos con pasos, y
+notificaciones locales. Corre en tu navegador, sin depender de ningún servidor externo.
 
-Esta app es una **PWA** (Progressive Web App). Para instalarla necesita estar servida por
-HTTPS — abrir el archivo directamente (`file://`) no permite instalar ni usar
-notificaciones correctamente. La forma más simple y gratuita:
+---
 
-### Opción recomendada: GitHub Pages (gratis, 10 min una sola vez)
-1. Crea una cuenta en github.com si no tienes una.
-2. Crea un repositorio nuevo, por ejemplo `planeador`.
-3. Sube estos archivos (`index.html`, `app.js`, `manifest.json`, `sw.js`, `icon-192.png`, `icon-512.png`) a la raíz del repositorio.
-4. Ve a **Settings → Pages**, selecciona la rama `main` y carpeta `/root`, guarda.
-5. GitHub te da una URL tipo `https://tuusuario.github.io/planeador/`.
-6. Abre esa URL en Chrome en tu Android.
-7. Toca el menú (⋮) → **"Agregar a pantalla de inicio"** / **"Instalar app"**.
-8. Listo — queda como un ícono más en tu celular, se abre en pantalla completa.
+## 1. Instalación (una sola vez)
 
-### Alternativas si prefieres no usar GitHub
-- Netlify Drop (netlify.com/drop): arrastras la carpeta y te da una URL al instante, gratis.
-- Cualquier hosting estático gratuito (Vercel, Cloudflare Pages, Firebase Hosting).
+1. Abre la URL de la app (te la da GitHub Pages, algo como `https://usuario.github.io/repo/`) en **Chrome**, en tu celular Android.
+2. Toca el menú (⋮, arriba a la derecha) → **"Instalar app"** o **"Agregar a pantalla de inicio"**.
+3. Ábrela desde el ícono que aparece en tu pantalla de inicio (no desde Chrome directo), para que las notificaciones funcionen mejor.
+4. Ve a la pestaña **Config** → toca **"Activar notificaciones"** → acepta el permiso que te pida el navegador.
+5. En **Config**, revisa/ajusta tu ventana de horas de trabajo (por defecto 7:30am–7:30pm), duración por defecto de una tarea, y minutos de aviso antes de la siguiente actividad. Guarda.
 
-## 2. Primer uso
-1. Al abrir la app, ve a **Config** y confirma tu ventana horaria (por defecto 7:30–19:30),
-   duración por defecto de tareas (30 min) y minutos de aviso de transición (10 min).
-2. Toca **"Activar notificaciones"** y acepta el permiso que pida el navegador.
-3. Ve a **Rutina** y agrega tus tareas fijas diarias (hora + duración + categoría).
-4. Ve a **Pool** y agrega tus tareas, o usa **"+ Carga masiva"** para pegar una lista completa.
-5. Ve a **Hoy** para ver el plan del día armado automáticamente.
+---
 
-## 3. Formato de carga masiva
-Una tarea por línea, separada por `|`:
+## 2. Conceptos básicos
+
+La app organiza todo alrededor de 5 tipos de cosas:
+
+| Tipo | Qué es | ¿Compite por prioridad? |
+|---|---|---|
+| **Tarea** | Algo pendiente por hacer, con importancia y urgencia | Sí |
+| **Rutina** | Algo que haces todos los días a la misma hora | No, tiene horario fijo |
+| **Cita** | Algo con fecha y hora exacta, una sola vez | No, tiene horario fijo |
+| **Objetivo** | Un resultado compuesto de varios pasos, cada paso ligado a una tarea | Indirectamente |
+| **Historial/Snapshot** | El registro de lo que pasó cada día | — |
+
+### Cómo se calcula la prioridad de una tarea
+Cada tarea tiene **importancia** (1 a 5) y **urgencia** (1 a 5). Se multiplican:
+
 ```
-nombre | importancia(1-5) | urgencia(1-5) o fecha AAAA-MM-DD | duración_min | categoria
+coeficiente = importancia × urgencia
 ```
-Ejemplo:
-```
-Cotizar bomba de riego | 2 | 2026-07-10 | 45 | agro
-Pagar Servicio OSPRI | 1 | 2026-07-08 | 15 | agro
-Revisar diseño sorter | 3 | 4 | 90 | agro
-```
-Categorías válidas: `agro`, `solar`, `airbnb`, `personal`, `otro`.
-Si el tercer campo es una fecha (AAAA-MM-DD), la urgencia se calcula automáticamente
-por deadline. Si es un número 1-5, se usa como urgencia manual.
 
-Cuando le pidas a Claude que te genere una lista semanal de tareas, pídele que te la
-entregue en este formato exacto para pegarla directo.
+**Entre más bajo el coeficiente, más prioridad tiene.** Una tarea con importancia 1 y
+urgencia 1 (coeficiente 1) se hace antes que una con importancia 5 y urgencia 5
+(coeficiente 25).
 
-## 4. Cómo funciona la prioridad
-`coeficiente = importancia × urgencia`. **Menor coeficiente = mayor prioridad.**
-El plan del día llena tus horas libres (fuera de rutina) con las tareas de menor
-coeficiente primero, respetando la duración estimada de cada una.
+### Urgencia automática por fecha límite (deadline)
+Si le pones una fecha límite a una tarea en vez de urgencia manual, la app la calcula sola:
 
-Urgencia automática por deadline:
-- 1 día o menos → urgencia 1
-- hasta 3 días → urgencia 2
-- hasta 1 semana → urgencia 3
-- hasta 15 días → urgencia 4
-- más de 1 mes → urgencia 5
-- vencida → se trata como urgencia 1 y se marca en rojo
+| Días para el deadline | Urgencia |
+|---|---|
+| Vencida o ≤1 día | 1 (máxima) |
+| ≤3 días | 2 |
+| ≤1 semana | 3 |
+| ≤15 días | 4 |
+| Más de 1 mes | 5 (mínima) |
 
-## 5. Notificaciones — limitación importante
-La app manda dos tipos de aviso: (1) el día que vence una tarea, (2) 10 minutos antes
-de que inicie tu siguiente actividad programada.
+---
 
-Estas notificaciones son **locales** (sin servidor externo), lo cual es más simple y
-privado, pero tiene un límite real de Android: si la app lleva muchas horas totalmente
-cerrada (no en segundo plano), el sistema puede no ejecutar la revisión periódica a
-tiempo. Para que sea confiable:
-- Ábrela al menos una vez en la mañana (revisa avisos pendientes al abrir).
-- Evita que el "ahorro de batería" de tu celular restrinja la app en segundo plano
-  (Ajustes → Apps → Planeador → Batería → Sin restricciones).
+## 3. Pestaña "Plan" — tu día a día
 
-Si en el futuro esto no es suficientemente confiable para ti, el siguiente nivel es
-agregar un pequeño servidor que mande notificaciones push reales — lo podemos evaluar
-más adelante si hace falta.
+Es la pantalla principal. Arriba tienes una barra de fecha:
+- **‹ ›** para moverte un día atrás/adelante.
+- El calendario para saltar a cualquier fecha.
+- **"Hoy"** para regresar rápido al día actual.
 
-## 6. Nuevo: navegación por fechas, citas y agendar
+**Si la fecha es hoy o futura → modo Planeación (editable):**
+- La app llena automáticamente tu ventana de horas: primero coloca tus rutinas y citas de
+  ese día en su horario fijo, y con el tiempo que sobra mete tus tareas pendientes,
+  empezando por la de menor coeficiente (mayor prioridad), respetando cuánto dura cada una.
+- Botones disponibles en cada tarea del plan:
+  - **✓ Hecho** — la marca como completada (se pone verde con un check, como recompensa).
+  - **⇄ Cambiar** — la sustituye por otra tarea del pool en ese mismo espacio.
+  - **✓ Agendar** — fija esa tarea en ese horario para ese día; ya no se recalcula ni se
+    sugiere en otros días hasta que la completes o la quites.
+  - **✎ Editar** — abre el formulario completo de la tarea.
+- Botones generales arriba de la lista:
+  - **+ Tarea** — mete una tarea nueva del pool en el primer espacio libre que quede ese
+    día, aunque ya hayas agendado el resto.
+  - **+ Cita** — agrega una cita ese mismo día.
+  - **✓ Agendar todo** — fija el plan completo del día tal como está mostrado.
+  - **↻ Regenerar** — descarta cualquier ajuste manual y vuelve a calcular el día desde cero
+    por prioridad.
+- Las rutinas también tienen botón **✓ Hecho** (independiente cada día — hoy sí, mañana se
+  vuelve a preguntar).
+- Las tareas ya agendadas muestran **✕ Quitar del día** por si te arrepientes.
 
-- En **Plan**, usa las flechas ‹ › o el calendario para moverte a cualquier fecha.
-  - Fecha pasada → modo **Reporte** (solo lectura, basado en el snapshot guardado ese día).
-  - Hoy o futuro → modo **Planeación** (editable, sugerido por prioridad).
-- En **Agenda** puedes crear **Citas**: fecha y hora fija, una sola vez, no compiten por prioridad.
-- En el plan de un día, el botón **"Agendar"** fija una tarea sugerida en su horario para
-  esa fecha (ya no se recalcula ni se sugiere en otros días). **"Agendar todo"** hace lo
-  mismo con el plan completo del día.
-- Cada vez que abres la app en un día distinto al último que la abriste, guarda
-  automáticamente una "foto" (snapshot) del plan de los días intermedios, para que el
-  modo Reporte siempre tenga algo que mostrar.
+**Si la fecha es pasada → modo Reporte (solo lectura):**
+- Muestra la fotografía guardada de ese día: qué se planeó y qué se marcó como hecho.
+- Si nunca abriste la app ese día, no habrá datos para mostrar — la app solo guarda el
+  reporte de los días en que estuvo en uso.
 
-## 7. Objetivos
+---
 
-Los objetivos se diseñan en un chat aparte con Claude (nombre, pasos, de qué tarea depende
-cada paso, y qué pasos dependen de otros). Claude te entrega un bloque JSON que pegas en
-**Objetivos → + Importar**. Cada paso se vincula a una tarea del pool; cuando la marcas
-"hecha", el paso se marca solo. Un paso con dependencias sin cumplir aparece "bloqueado"
-y su tarea no se sugiere en el plan del día hasta desbloquearse.
+## 4. Pestaña "Pool" — todas tus tareas pendientes
 
-## 8. Historial y seguimiento con Claude
-En la pestaña **Historial** puedes exportar un archivo `.json` con tus tareas, rutinas
-y configuración. Tráelo a un chat con Claude para que analice tu avance y te dé
-sugerencias de ajuste al plan. También puedes importar un `.json` para restaurar datos
-o mover tu información a otro celular.
+Lista completa de tareas, ordenadas por prioridad. Desde aquí:
+- Toca **"+"** (botón flotante) para crear una tarea nueva.
+- Toca **"+ Carga masiva"** para pegar varias tareas de un jalón (una por línea):
+  ```
+  nombre | importancia(1-5) | urgencia(1-5) o fecha AAAA-MM-DD | duración_min | categoria
+  ```
+  Ejemplo:
+  ```
+  Cotizar bomba de riego | 2 | 2026-07-10 | 45 | agro
+  Pagar servicio | 1 | 2026-07-08 | 15 | agro
+  ```
+  Categorías válidas: `agro`, `solar`, `airbnb`, `personal`, `otro` (ajusta estos nombres a
+  tus propias categorías si vas a personalizar la app).
+- Una tarea marcada **"🔒 agendada"** ya tiene día fijo asignado.
+- Una tarea marcada **"🔗 bloqueada por objetivo"** no se puede trabajar todavía porque
+  depende de otro paso sin terminar (ver sección de Objetivos).
+
+---
+
+## 5. Pestaña "Agenda" — Rutina y Citas
+
+**Rutina diaria:** tareas que se repiten todos los días a la misma hora (ej. "Revisión de
+invernadero, 7:30am, 30 min"). Toca **"+ Rutina"** para agregar una. Ocupan su horario por
+defecto en el Plan, pero las puedes editar o mover manualmente cualquier día.
+
+**Citas:** algo con fecha y hora exacta, una sola vez (ej. "Junta con proveedor, 15 de
+agosto, 10:00am"). No compiten por prioridad — siempre aparecen en su horario. Toca
+**"+ Cita"** para agregar una.
+
+---
+
+## 6. Pestaña "Objetivos" — resultados de varios pasos
+
+Un objetivo es una meta compuesta de pasos, y cada paso se completa cuando marcas como
+"hecha" la tarea que tiene ligada. Los pasos pueden depender unos de otros (en serie) o
+ser independientes (en paralelo) — un paso bloqueado no se sugiere en tu plan diario hasta
+que se desbloquee.
+
+Los objetivos **no se crean a mano en la app**. Se diseñan en una conversación con Claude
+(nombre del objetivo, pasos, de qué depende cada uno), y Claude te entrega un bloque de
+texto JSON. Para cargarlo:
+1. Toca **"+ Importar"**.
+2. Pega el bloque completo.
+3. Toca **"Cargar objetivo"**.
+
+Verás la barra de progreso (% de pasos completados) y cada paso con un punto de color:
+- 🟢 verde = hecho
+- 🟡 amarillo = disponible, puedes trabajarlo
+- ⚪ gris = bloqueado, depende de otro paso
+
+---
+
+## 7. Pestaña "Historial"
+
+Muestra tus tareas completadas. Desde aquí:
+- **⬇ Exportar JSON** — descarga un archivo con todas tus tareas, rutinas, citas,
+  objetivos y los snapshots diarios guardados. Llévalo a un chat con Claude para que
+  analice tu avance y te dé sugerencias.
+- **⬆ Importar JSON** — restaura un archivo exportado anteriormente (por ejemplo si
+  cambias de celular). Ojo: reemplaza todos los datos actuales.
+
+---
+
+## 8. Dónde vive tu información
+
+Todo se guarda **localmente en el navegador de tu celular** (no en ningún servidor). Esto
+significa:
+- Solo existe en ese dispositivo, no se sincroniza solo con otro celular o computadora.
+- Si borras los datos de navegación de Chrome para ese sitio, o desinstalas la app, se
+  pierde. Por eso conviene exportar el JSON de vez en cuando como respaldo.
+- Si algún día cambias la URL donde está alojada la app, los datos no se mueven solos —
+  tendrías que exportar de la URL vieja e importar en la nueva.
+
+---
+
+## 9. Notificaciones — qué esperar
+
+La app manda dos tipos de aviso, sin depender de ningún servidor:
+1. El día que vence una tarea (una sola vez, ese día).
+2. Unos minutos antes de que empiece tu siguiente actividad programada (configurable en
+   Config, por defecto 10 min).
+
+Estas notificaciones son locales al navegador. Si el celular tiene la app cerrada por
+muchas horas seguidas, Android puede retrasarlas. Para que sean más confiables:
+- Abre la app al menos una vez al empezar el día.
+- Quítale restricciones de batería: Ajustes → Apps → (la app) → Batería → Sin
+  restricciones.
+
+---
+
+## 10. Actualizar la app a una versión nueva
+
+Si en el futuro se agregan más funciones:
+1. Sube los archivos nuevos al mismo repositorio de GitHub (Add file → Upload files),
+   reemplazando los que ya existen.
+2. Espera 1-2 minutos a que GitHub Pages actualice el sitio.
+3. En tu celular, abre la URL en Chrome (no el ícono instalado) una vez para forzar que
+   descargue la versión nueva. Si no se actualiza, borra el caché del sitio en Chrome y
+   vuelve a intentar — esto no borra los datos guardados de la app.
