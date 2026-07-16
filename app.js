@@ -42,7 +42,12 @@ function uid(){
 }
 
 function todayStr(d = new Date()){
-  return d.toISOString().slice(0,10);
+  // OJO: no usar d.toISOString() aqui - convierte a UTC y en Mexico (UTC-6)
+  // eso hace que a partir de las ~6pm la app crea que ya es el dia siguiente.
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
 }
 
 function addDays(fechaStr, n){
@@ -514,6 +519,18 @@ function quitarDelDia(taskId){
   renderAll();
 }
 
+function liberarAgendada(taskId){
+  const t = state.tasks.find(x=>x.id===taskId);
+  if(!t || !t.agendadaEn) return;
+  const fecha = t.agendadaEn;
+  t.agendadaEn = null;
+  if(state.planOverrides[fecha]){
+    state.planOverrides[fecha] = state.planOverrides[fecha].filter(o => !(o.tipo==='tarea' && o.id===taskId));
+  }
+  saveState();
+  renderAll();
+}
+
 /* ====================== AGENDAR ====================== */
 function agendarUno(idx){
   const plan = construirPlanDelDia(selectedDate);
@@ -592,6 +609,24 @@ function doSwap(newTaskId){
 }
 
 /* ====================== MOVER TAREA (flechas) ====================== */
+/* ====================== REEMPACAR (evita traslapes tras editar duracion) ====================== */
+function reempacarFecha(fecha){
+  if(!state.planOverrides[fecha]) return; // solo aplica si ese dia tiene agenda fija
+  const plan = construirPlanDelDia(fecha);
+  const cfg = state.config;
+  let cursor = hhmmToMins(cfg.inicio);
+  const nuevoOverride = [];
+  plan.forEach(b=>{
+    if(b.type==='cita') return; // las citas no viven en el override
+    const dur = b.type==='routine' ? b.ref.duracion : (b.ref.duracion || cfg.duracionDefault);
+    const start = cursor;
+    if(b.type==='routine') nuevoOverride.push({tipo:'rutina', id:b.ref.id, start});
+    else nuevoOverride.push({tipo:'tarea', id:b.ref.id, start});
+    cursor += dur;
+  });
+  state.planOverrides[fecha] = nuevoOverride;
+}
+
 function moverTarea(idx, direccion){
   const plan = construirPlanDelDia(selectedDate);
   const slot = plan[idx];
@@ -632,6 +667,15 @@ function moverTarea(idx, direccion){
 function renderPool(){
   const list = document.getElementById('poolList');
   const pendientes = state.tasks.filter(t=>t.estatus!=='hecho').sort((a,b)=>coeficiente(a)-coeficiente(b));
+
+  const bannerEl = document.getElementById('poolBanner');
+  const agendasVencidas = pendientes.filter(t=>t.agendadaEn && t.agendadaEn < todayStr());
+  if(bannerEl){
+    bannerEl.innerHTML = agendasVencidas.length>0
+      ? `<div class="banner crit">⚠ ${agendasVencidas.length} tarea(s) quedaron agendadas en un día que ya pasó sin completarse. Usa "🔓 Quitar agenda" para regresarlas al pool.</div>`
+      : '';
+  }
+
   if(pendientes.length===0){
     list.innerHTML = '<div class="empty">Pool vacío. Toca "+" para agregar una tarea, o usa carga masiva.</div>';
     return;
@@ -639,6 +683,7 @@ function renderPool(){
   list.innerHTML = pendientes.map(t=>{
     const bloqueada = tareaBloqueadaPorObjetivo(t.id);
     const overdueClass = estaVencida(t) ? 'overdue' : '';
+    const agendaVencida = t.agendadaEn && t.agendadaEn < todayStr();
     return `
     <div class="card ${overdueClass} ${bloqueada?'blocked':''}" style="border-left-color:${prioridadColor(t)}">
       <div class="card-top">
@@ -646,7 +691,7 @@ function renderPool(){
           <h3>${escapeHtml(t.nombre)}</h3>
           <div class="meta">
             <span class="tag ${t.categoria}">${catLabel(t.categoria)}</span>
-            ${t.agendadaEn ? `&nbsp;<span class="tag locked">🔒 ${t.agendadaEn}</span>` : ''}
+            ${t.agendadaEn ? `&nbsp;<span class="tag locked">🔒 ${t.agendadaEn}${agendaVencida?' (vencida)':''}</span>` : ''}
             ${bloqueada ? `&nbsp;<span class="tag locked">🔗 bloqueada por objetivo</span>` : ''}
             &nbsp;I${t.importancia} × U${urgenciaEfectiva(t)} = <b>${coeficiente(t)}</b>
             &nbsp;· ${t.duracion} min
@@ -657,6 +702,7 @@ function renderPool(){
       <div class="actions">
         <button class="btn small" onclick="toggleEstatus('${t.id}')">✓ Hecho</button>
         <button class="btn small" onclick="openNotas('tarea','${t.id}')">📝 Notas${t.notas?' •':''}</button>
+        ${t.agendadaEn ? `<button class="btn small" onclick="liberarAgendada('${t.id}')">🔓 Quitar agenda</button>` : ''}
         <button class="btn small" onclick="openTaskModal('${t.id}')">✎ Editar</button>
       </div>
     </div>`;
@@ -707,7 +753,7 @@ function renderObjetivos(){
     const pasosHtml = obj.pasos.map(p=>{
       const est = pasoEstatus(obj,p);
       const tarea = state.tasks.find(t=>t.id===p.tareaId);
-      return `<div class="paso-row"><div class="paso-dot ${est}"></div><div>${escapeHtml(p.nombre)} ${tarea?`<span style="color:var(--text-dim)">— ${escapeHtml(tarea.nombre)}</span>`:''}</div></div>`;
+      return `<div class="paso-row"><div class="paso-dot ${est}"></div><div>${escapeHtml(p.nombre)} ${tarea?`<span style="color:var(--text-dim)">— ${escapeHtml(tarea.nombre)}</span>`:`<span style="color:var(--pr-overdue)">— ⚠ sin tarea vinculada (edita el objetivo)</span>`}</div></div>`;
     }).join('');
     return `
     <div class="card" style="border-left-color:var(--cat-${obj.categoria})">
@@ -806,7 +852,11 @@ function saveTask(){
 
   if(id){
     const t = state.tasks.find(x=>x.id===id);
+    const duracionVieja = t.duracion;
     Object.assign(t, {nombre, importancia, autoUrg, urgencia, deadline, categoria, duracion});
+    if(t.agendadaEn && duracion !== duracionVieja){
+      reempacarFecha(t.agendadaEn);
+    }
   } else {
     state.tasks.push({
       id: uid(), nombre, importancia, autoUrg, urgencia, deadline, categoria, duracion,
@@ -822,7 +872,19 @@ function saveTask(){
 function deleteTaskFromModal(){
   const id = document.getElementById('tId').value;
   if(!id) return;
-  if(!confirm('¿Eliminar esta tarea permanentemente?')) return;
+
+  let objetivoLigado = null, pasoLigado = null;
+  for(const obj of state.objetivos){
+    const p = obj.pasos.find(pp=>pp.tareaId===id);
+    if(p){ objetivoLigado = obj; pasoLigado = p; break; }
+  }
+
+  const msg = objetivoLigado
+    ? `Esta tarea es el paso "${pasoLigado.nombre}" del objetivo "${objetivoLigado.nombre}". Si la borras, ese paso se queda sin tarea y ese objetivo ya no se podrá completar hasta que edites el objetivo. ¿Eliminar de todos modos?`
+    : '¿Eliminar esta tarea permanentemente?';
+  if(!confirm(msg)) return;
+
+  if(objetivoLigado) pasoLigado.tareaId = null;
   state.tasks = state.tasks.filter(x=>x.id!==id);
   saveState();
   closeModal('modalTarea');
@@ -1066,7 +1128,11 @@ function procesarImportObjetivo(){
         else if(p.tarea.urgencia){ t.autoUrg = false; t.urgencia = clamp15(p.tarea.urgencia); }
       }
     } else if(p.tarea){
-      const existente = state.tasks.find(t=> t.nombre.toLowerCase() === (p.tarea.nombre||'').toLowerCase());
+      const idsYaLigadosAObjetivos = new Set();
+      state.objetivos.forEach(o=> o.pasos.forEach(pp=>{ if(pp.tareaId) idsYaLigadosAObjetivos.add(pp.tareaId); }));
+      const existente = state.tasks.find(t=>
+        t.nombre.toLowerCase() === (p.tarea.nombre||'').toLowerCase() && !idsYaLigadosAObjetivos.has(t.id)
+      );
       if(existente){
         tareaId = existente.id;
       } else {
@@ -1167,9 +1233,11 @@ function guardarConfig(){
   const trans = document.getElementById('cfgTransicion').value;
   state.config.transicionMin = trans === '' ? 10 : parseInt(trans);
   state.planOverrides = {};
+  // si no, estas tareas quedarian "agendadas" a un dia sin override real, invisibles para siempre
+  state.tasks.forEach(t=>{ t.agendadaEn = null; });
   saveState();
   renderAll();
-  alert('Configuración guardada.');
+  alert('Configuración guardada. Se reinició la agenda fija de todos los días para que respete la nueva ventana de horario.');
 }
 
 /* ====================== NOTIFICACIONES ====================== */
@@ -1272,6 +1340,10 @@ function chequearCambioDeDia(){
     let guard = 0;
     while(d < hoy && guard < 60){
       if(!state.snapshots[d]) guardarSnapshot(d);
+      // libera tareas que quedaron agendadas ese día sin completarse
+      state.tasks.forEach(t=>{
+        if(t.agendadaEn === d && t.estatus !== 'hecho') t.agendadaEn = null;
+      });
       d = addDays(d,1);
       guard++;
     }
